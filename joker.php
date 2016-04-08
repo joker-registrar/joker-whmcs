@@ -1,6 +1,46 @@
 <?php
-function joker_getConfigArray() {
+/*
+  ****************************************************************************
+  *                                                                          *
+  * Joker.com WHMCS Registrar Module                                         *
+  * Version 1.0.0                                                            *
+  *                                                                          *
+  *                                                                          *
+  * The MIT License (MIT)                                                    *
+  * Copyright (c) 2016 Joker.com                                             *
+  * Permission is hereby granted, free of charge, to any person obtaining a  *
+  * copy of this software and associated documentation files                 *
+  * (the "Software"), to deal in the Software without restriction, including *
+  * without limitation the rights to use, copy, modify, merge, publish,      *
+  * distribute, sublicense, and/or sell copies of the Software, and to       *
+  * permit persons to whom the Software is furnished to do so, subject to    *
+  * the following conditions:                                                *
+  *                                                                          *
+  * The above copyright notice and this permission notice shall be included  *
+  * in all copies or substantial portions of the Software.                   *
+  *                                                                          *
+  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS  *
+  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF               *
+  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.   *
+  * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY     *
+  * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,     *
+  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE        *
+  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                   *
+  *                                                                          *
+  ****************************************************************************
+  *                                                                          *
+  * To install, create a folder named joker under                            *
+  * modules/registrar under your whmcs root directory and place              *
+  * joker.php, eppcode.tpl logo.gif into it                                  *
+  * Then in WHMCS admin menu, go to registrar module settings and select     *
+  * Joker, and configure. You should enter your api key in                   *
+  * the password field and api username in username field.                   *
+  *                                                                          *
+  ****************************************************************************
+*/
 
+
+function joker_getConfigArray() {
 $configarray = array(
  "Description" => array("Type" => "System", "Value"=>"Don't have an Joker Account yet? Get one at: <a href=\"http://joker.com/\" target=\"_blank\">http://joker.com/</a>"),
  "Username" => array( "Type" => "text", "Size" => "20", "Description" => "Enter your Joker Reseller Account Username here", ),
@@ -460,7 +500,7 @@ function joker_CreateOwnerContact($params) {
     $Joker->AddParam( "name", $params["firstname"].' '.$params["lastname"] );
     $Joker->AddParam( "organization", $params["companyname"] );
 
-    if ($params['original']['domainObj']->getLastTLDSegment() == 'us') {
+    if ($params['domainObj']->getLastTLDSegment() == 'us') {
 
         $nexus = $params["additionalfields"]['Nexus Category'];
         $countrycode = $params["additionalfields"]['Nexus Country'];
@@ -498,7 +538,7 @@ function joker_CreateOwnerContact($params) {
         }
         $Joker->AddParam( "app-purpose", $purpose );
 
-    } elseif ($params['original']['domainObj']->getLastTLDSegment() == 'uk') {
+    } elseif ($params['domainObj']->getLastTLDSegment() == 'uk') {
 
         if ($params["additionalfields"]['Legal Type']=="UK Limited Company") {
             $uklegaltype="LTD";
@@ -534,7 +574,7 @@ function joker_CreateOwnerContact($params) {
         $Joker->AddParam( "account-type", $uklegaltype );
         $Joker->AddParam( "company-number", $params["additionalfields"]['Company ID Number'] );
 
-    } elseif ($params['original']['domainObj']->getLastTLDSegment() == 'eu') {
+    } elseif ($params['domainObj']->getLastTLDSegment() == 'eu') {
         $Joker->AddParam( "lang", "EN" );
     }
     $Joker->DoTransaction("contact-create", $params);
@@ -606,7 +646,7 @@ function joker_CreateAdminContact($params) {
     $Joker->AddParam( "name", $params["adminfirstname"].' '.$params["adminlastname"] );
     $Joker->AddParam( "organization", $params["admincompanyname"] );
 
-    if ($params['original']['domainObj']->getLastTLDSegment() == 'eu') {
+    if ($params['domainObj']->getLastTLDSegment() == 'eu') {
         $Joker->AddParam( "lang", "EN" );
     }
 

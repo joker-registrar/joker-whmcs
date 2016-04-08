@@ -1,0 +1,5 @@
+--------------------------------------
+ Joker.com registrar module for WHMCS
+--------------------------------------
+Simply put the content of this zip archive into the folder: modules/registrars/joker/
+Configuration of this registrar module is done through WHMCS.
