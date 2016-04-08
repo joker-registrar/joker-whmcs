@@ -338,7 +338,7 @@ function joker_RegisterDomain($params) {
 
     //#################################################################################################################
     //# IDN fix for Swedish language only. Otherwise language will be guessed by Joker depending on registrant country#
-    if ($params['original']['domainObj']->isIdn() && $params['language'] == 'swedish') {
+    if ($params['domainObj']->isIdn() && $params['language'] == 'swedish') {
         if (($params["tld"] == "co") || ($params["tld"] == "biz") || ($params["tld"] == "tel")){
             $Joker->AddParam("language", "se");
         } elseif (($params["tld"] == "com") || ($params["tld"] == "net") || ($params["tld"] == "li") || ($params["tld"] == "fr") || ($params["tld"] == "ch") || ($params["tld"] == "sg") || ($params["tld"] == "com.sg") || ($params["tld"] == "tv") || ($params["tld"] == "co.uk")){
