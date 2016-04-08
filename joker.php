@@ -1141,6 +1141,49 @@ function joker_DeleteNameserver($params) {
 
 }
 
+function joker_SyncManual($params) {
+    $values = array();
+
+    $params = injectDomainObjectIfNecessary($params);
+
+    $idn_domain = $params['original']['domainObj']->getDomain(true);
+
+    $Joker = new CJokerInterface;
+    $Joker->AddParam( "pattern", $idn_domain );
+    //$Joker->AddParam( "showstatus", 1 );
+    $Joker->DoTransaction('query-domain-list',$params);
+
+    if ($Joker->getValue("Err1")) {
+        $values["error"] = $Joker->getValue("Err1");
+        return $values;
+    }
+
+    $resultList = $Joker->getResponseList();
+
+    if (count($resultList) > 0) {
+        //$status = explode(",",$resultList[0]['domain_status']);
+        print $resultList[0]['expiration_date'];
+        $time_grace = intval($GLOBALS['CONFIG']['OrderDaysGrace']) * 86400;
+        $sync_data = array(
+            'domainid' => $params['domainid'],
+            'expirydate' => $resultList[0]['expiration_date'],
+            'nextduedate' => date('Ymd', strtotime($resultList[0]['expiration_date']) - $time_grace),
+        );
+        $expDate = new DateTime($values['expirydate'],new DateTimeZone('UTC'));
+        $now = new DateTime(null,new DateTimeZone('UTC'));
+        if ($expDate > $now) {
+            $sync_data['status'] = 'active';
+        }
+        $result = localAPI('updateclientdomain', $sync_data, $params['AdminUser']);
+    } else {
+        $values['error'] = "Domain not found";
+    }
+    if (!isset($values['error'])) {
+        $values['message'] = '(Warning) You must refresh page to see the changes';
+    }
+    return $values;
+}
+
 function joker_Sync($params) {
 
     $params = injectDomainObjectIfNecessary($params);
@@ -1272,6 +1315,7 @@ function joker_AdminCustomButtonArray($params) {
 
     $buttonarray = array();
     $buttonarray["EPP Code"] = "FetchEPPCode";
+    $buttonarray["Sync"] = "SyncManual";
     return $buttonarray;
 }
 
