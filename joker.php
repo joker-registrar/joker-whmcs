@@ -31,11 +31,9 @@
   *                                                                          *
   * To install, create a folder named joker under                            *
   * modules/registrar under your whmcs root directory and place              *
-  * joker.php, eppcode.tpl logo.gif into it                                  *
+  * joker.php, eppcode.tpl logo.gif into it.                                 *
   * Then in WHMCS admin menu, go to registrar module settings and select     *
-  * Joker, and configure. You should enter your api key in                   *
-  * the password field and api username in username field.                   *
-  *                                                                          *
+  * Joker, and configure.                                                    *
   ****************************************************************************
 */
 
