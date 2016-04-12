@@ -29,8 +29,8 @@
   *                                                                          *
   ****************************************************************************
   *                                                                          *
-  * To install, create a folder named joker under                            *
-  * modules/registrar under your whmcs root directory and place              *
+  * To install, create a folder named joker in modules/registrar             *
+  * of your whmcs installation root directory and copy                       *
   * joker.php, eppcode.tpl logo.gif into it.                                 *
   * Then in WHMCS admin menu, go to registrar module settings and select     *
   * Joker, and configure.                                                    *
