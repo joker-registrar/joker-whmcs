@@ -57,10 +57,11 @@ function joker_GetNameservers($params) {
 
     $idn_domain = $params['original']['domainObj']->getDomain(true);
 
-    $Joker = new CJokerInterface;
-    $Joker->NewRequest();
-    $Joker->AddParam( "domain", $idn_domain );
-    $Joker->DoTransaction('query-whois', $params);
+    $reqParams = Array();
+    $reqParams["domain"] = $idn_domain;
+
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction('query-whois', $reqParams);
 
     $values = array();
     $nameservers = $Joker->getValue('domain.nservers.nserver.handle');
@@ -68,8 +69,8 @@ function joker_GetNameservers($params) {
         $values["ns".$i] = isset($nameservers[$i-1]) ? $nameservers[$i-1] : '';
     }
 
-    if ($Joker->getValue("Err1")) {
-        $values["error"] = $Joker->getValue("Err1");
+    if ($Joker->hasError()) {
+        $values["error"] = $Joker->getError();
     }
 
     return $values;
@@ -89,14 +90,16 @@ function joker_SaveNameservers($params) {
         }
     }
 
-    $Joker = new CJokerInterface;
-    $Joker->AddParam( "domain", $idn_domain );
-    $Joker->AddParam( "ns-list", implode(":", $nameserverList ));
-    $Joker->DoTransaction('domain-modify', $params);
+    $reqParams = Array();
+    $reqParams["domain"] = $idn_domain;
+    $reqParams["ns-list"] = implode(":", $nameserverList );
+
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction('domain-modify', $reqParams);
 
     $values = array();
-    if ($Joker->getValue("Err1")) {
-        $values["error"] = $Joker->getValue("Err1");
+    if ($Joker->hasError()) {
+        $values["error"] = $Joker->getError();
     }
 
     return $values;
@@ -109,10 +112,12 @@ function joker_GetRegistrarLock($params) {
 
     $idn_domain = $params['original']['domainObj']->getDomain(true);
 
-    $Joker = new CJokerInterface;
-    $Joker->AddParam( "pattern", $idn_domain );
-    $Joker->AddParam( "showstatus", 1 );
-    $Joker->DoTransaction('query-domain-list',$params);
+    $reqParams = Array();
+    $reqParams["pattern"] = $idn_domain;
+    $reqParams["showstatus"] = 1;
+
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction('query-domain-list', $reqParams);
 
     $resultList = $Joker->getResponseList();
 
@@ -140,13 +145,15 @@ function joker_SaveRegistrarLock($params) {
         $command = "domain-unlock";
     }
 
-    $Joker = new CJokerInterface;
-    $Joker->AddParam( "domain", $idn_domain );
-    $Joker->DoTransaction($command, $params);
+    $reqParams = Array();
+    $reqParams["domain"] = $idn_domain;
+
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction($command, $reqParams);
 
     $values = array();
-    if ($Joker->getValue("Err1")) {
-        $values["error"] = $Joker->getValue("Err1");
+    if ($Joker->hasError()) {
+        $values["error"] = $Joker->getError();
     }
     return $values;
 }
@@ -157,13 +164,15 @@ function joker_GetEmailForwarding($params) {
 
     $idn_domain = $params['original']['domainObj']->getDomain(true);
 
-    $Joker = new CJokerInterface;
-    $Joker->AddParam( "domain", $idn_domain );
-    $Joker->DoTransaction("dns-zone-get",$params);
+    $reqParams = Array();
+    $reqParams["domain"] = $idn_domain;
+
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction("dns-zone-get", $reqParams);
     
     $values = array();
 
-    if (!$Joker->getValue("Err1")) {
+    if (!$Joker->hasError()) {
         $dnsrecords = $Joker->getResponseList();
         $counter = 1;
         foreach($dnsrecords as $record) {
@@ -175,7 +184,7 @@ function joker_GetEmailForwarding($params) {
             }
         }
     } else {
-        $values["error"] = $Joker->getValue("Err1");
+        $values["error"] = $Joker->getError();
     }
 
     return $values;
@@ -188,12 +197,14 @@ function joker_SaveEmailForwarding($params) {
 
     $idn_domain = $params['original']['domainObj']->getDomain(true);
 
-    $Joker = new CJokerInterface;
-    $Joker->AddParam( "domain", $idn_domain );
-    $Joker->DoTransaction("dns-zone-get",$params);
+    $reqParams = Array();
+    $reqParams["domain"] = $idn_domain;
 
-    if ($Joker->getValue("Err1")) {
-        $values["error"] = $Joker->getValue("Err1");
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction("dns-zone-get", $reqParams);
+
+    if ($Joker->hasError()) {
+        $values["error"] = $Joker->getError();
         return $values;
     }
 
@@ -218,13 +229,13 @@ function joker_SaveEmailForwarding($params) {
         }
     }
 
-    $Joker->NewRequest();
-    $Joker->AddParam( "domain", $idn_domain );
-    $Joker->AddParam( "zone", implode("\n", $dnsrecords) );
-    $Joker->DoTransaction("dns-zone-put", $params);
+    $reqParams = Array();
+    $reqParams["domain"] = $idn_domain;
+    $reqParams["zone"] = implode("\n", $dnsrecords);
+    $Joker->ExecuteAction("dns-zone-put", $reqParams);
 
-    if ($Joker->getValue("Err1")) {
-        $values["error"] = $Joker->getValue("Err1");
+    if ($Joker->hasError()) {
+        $values["error"] = $Joker->getError();
     }
 
     return $values;
@@ -237,13 +248,15 @@ function joker_GetDNS($params) {
 
     $idn_domain = $params['original']['domainObj']->getDomain(true);
 
-    $Joker = new CJokerInterface;
-    $Joker->AddParam( "domain", $idn_domain );
-    $Joker->DoTransaction("dns-zone-get",$params);
+    $reqParams = Array();
+    $reqParams["domain"] = $idn_domain;
+
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction("dns-zone-get", $reqParams);
 
     $hostRecords = array();
 
-    if (!$Joker->getValue("Err1")) {
+    if (!$Joker->hasError()) {
         $dnsrecords = $Joker->getResponseList();
         foreach($dnsrecords as $record) {
             if (count($record) > 2 && ($record[1] !== "NS" || $record[0] !== "@")) {
@@ -277,12 +290,14 @@ function joker_SaveDNS($params) {
 
     $idn_domain = $params['original']['domainObj']->getDomain(true);
 
-    $Joker = new CJokerInterface;
-    $Joker->AddParam( "domain", $idn_domain );
-    $Joker->DoTransaction("dns-zone-get",$params);
+    $reqParams = Array();
+    $reqParams["domain"] = $idn_domain;
 
-    if ($Joker->getValue("Err1")) {
-        $values["error"] = $Joker->getValue("Err1");
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction("dns-zone-get", $reqParams);
+
+    if ($Joker->hasError()) {
+        $values["error"] = $Joker->getError();
         return $values;
     }
 
@@ -302,13 +317,13 @@ function joker_SaveDNS($params) {
         }
     }
 
-    $Joker->NewRequest();
-    $Joker->AddParam( "domain", $idn_domain );
-    $Joker->AddParam( "zone", implode("\n", $dnsrecords) );
-    $Joker->DoTransaction("dns-zone-put", $params);
+    $reqParams = Array();
+    $reqParams["domain"] = $idn_domain;
+    $reqParams["zone"] = implode("\n", $dnsrecords);
+    $Joker->ExecuteAction("dns-zone-put", $reqParams);
 
-    if ($Joker->getValue("Err1")) {
-        $values["error"] = $Joker->getValue("Err1");
+    if ($Joker->hasError()) {
+        $values["error"] = $Joker->getError();
     }
 
     return $values;
@@ -329,8 +344,7 @@ function joker_RegisterDomain($params) {
 
     $params = injectDomainObjectIfNecessary($params);
 
-    $Joker = new CJokerInterface;
-    $Joker->NewRequest();
+    $reqParams = Array();
 
     $idn_domain = $params['domainObj']->getDomain(true);
 
@@ -338,27 +352,27 @@ function joker_RegisterDomain($params) {
     //# IDN fix for Swedish language only. Otherwise language will be guessed by Joker depending on registrant country#
     if ($params['domainObj']->isIdn() && $params['language'] == 'swedish') {
         if (($params["tld"] == "co") || ($params["tld"] == "biz") || ($params["tld"] == "tel")){
-            $Joker->AddParam("language", "se");
+            $reqParams["language"] = "se";
         } elseif (($params["tld"] == "com") || ($params["tld"] == "net") || ($params["tld"] == "li") || ($params["tld"] == "fr") || ($params["tld"] == "ch") || ($params["tld"] == "sg") || ($params["tld"] == "com.sg") || ($params["tld"] == "tv") || ($params["tld"] == "co.uk")){
-            $Joker->AddParam("language", "swe");
+            $reqParams["language"] = "swe";
         } else {
-            $Joker->AddParam("language", "sv");
+            $reqParams["language"] = "sv";
         }
     }
     //# END IDN FIX
     //#################################################################################################################
 
-    $Joker->AddParam("domain", $idn_domain );
-    $Joker->AddParam("period", $params["regperiod"]*12 );
-    $Joker->AddParam("status", "production" );
-    $Joker->AddParam("owner-c", $owner_result['handle']);
-    $Joker->AddParam("admin-c", $admin_result['handle']);
-    $Joker->AddParam("tech-c", $admin_result['handle']);
-    $Joker->AddParam("billing-c", $admin_result['handle']);
+    $reqParams["domain"] = $idn_domain;
+    $reqParams["period"] = $params["regperiod"]*12;
+    $reqParams["status"] = "production";
+    $reqParams["owner-c"] = $owner_result['handle'];
+    $reqParams["admin-c"] = $admin_result['handle'];
+    $reqParams["tech-c"] = $admin_result['handle'];
+    $reqParams["billing-c"] = $admin_result['handle'];
 
 
     if ($params["DefaultNameservers"]) {
-        $Joker->AddParam( "ns-list", "a.ns.joker.com:b.ns.joker.com:c.ns.joker.com");
+        $reqParams["ns-list"] = "a.ns.joker.com:b.ns.joker.com:c.ns.joker.com";
     } else {
         $nslist = array();
         for ($i=1;$i<=5;$i++) {
@@ -366,16 +380,17 @@ function joker_RegisterDomain($params) {
                 $nslist[] = $params["ns$i"];
             }
         }
-        $Joker->AddParam( "ns-list", implode(':',$nslist) );
+        $reqParams["ns-list"] = implode(':', $nslist);
     }
 
     if (isset($params["idprotection"]) && $params["idprotection"]) {
-        $Joker->AddParam( "privacy", "pro" );
+        $reqParams["privacy"] = "pro";
     }
 
-    $Joker->DoTransaction("domain-register",$params);
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction("domain-register", $reqParams);
 
-    $values["error"] = $Joker->getValue("Err1");
+    $values["error"] = $Joker->getError();
 
     return $values;
 
@@ -393,14 +408,13 @@ function joker_TransferDomain($params) {
 
     $idn_domain = $params['domainObj']->getDomain(true);
 
-    $Joker = new CJokerInterface;
-    $Joker->NewRequest();
-    $Joker->AddParam( "domain", $idn_domain );
-    $Joker->AddParam( "transfer-auth-id", $params["transfersecret"] );
-    $Joker->AddParam( "owner-c", $owner_result['handle']);
-    $Joker->AddParam( "admin-c", $owner_result['handle']);
-    $Joker->AddParam( "tech-c", $owner_result['handle']);
-    $Joker->AddParam( "billing-c", $owner_result['handle']);
+    $reqParams = Array();
+    $reqParams["domain"] = $idn_domain;
+    $reqParams["transfer-auth-id"] = $params["transfersecret"];
+    $reqParams["owner-c"] = $owner_result['handle'];
+    $reqParams["admin-c"] = $owner_result['handle'];
+    $reqParams["tech-c"] = $owner_result['handle'];
+    $reqParams["billing-c"] = $owner_result['handle'];
 
 
     $nslist = array();
@@ -410,16 +424,17 @@ function joker_TransferDomain($params) {
         }
     }
     if (count($nslist)>0) {
-        $Joker->AddParam( "ns-list", implode(':',$nslist) );
+        $reqParams["ns-list"] = implode(':', $nslist);
     }
-
 
     if (isset($params["idprotection"]) && $params["idprotection"]) {
-        $Joker->AddParam( "privacy", "pro" );
+        $reqParams["privacy"] = "pro";
     }
-    $Joker->DoTransaction("domain-transfer-in-reseller", $params);
 
-    $values["error"] = $Joker->getValue("Err1");
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction("domain-transfer-in-reseller", $reqParams);
+
+    $values["error"] = $Joker->getError();
 
     return $values;
 
@@ -432,13 +447,15 @@ function joker_RenewDomain($params) {
 
     $idn_domain = $params['original']['domainObj']->getDomain(true);
 
-    $Joker = new CJokerInterface;
-    $Joker->AddParam( "pattern", $idn_domain );
-    //$Joker->AddParam( "showstatus", 1 );
-    $Joker->DoTransaction('query-domain-list',$params);
+    $reqParams = Array();
+    $reqParams["pattern"] = $idn_domain;
+    //$reqParams["showstatus"] = 1;
 
-    if ($Joker->getValue("Err1")) {
-        $values['error'] = $Joker->getValue("Err1");
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction('query-domain-list', $reqParams);
+
+    if ($Joker->hasError()) {
+        $values['error'] = $Joker->getError();
         return $values;
     }
 
@@ -454,22 +471,22 @@ function joker_RenewDomain($params) {
     }
 
     if (!$restore) {
-        $Joker->NewRequest();
-        $Joker->AddParam( "domain", $idn_domain );
-        $Joker->AddParam( "period", $params["regperiod"]*12 );
+        $reqParams = Array();
+        $reqParams["domain"] = $idn_domain;
+        $reqParams["period"] = $params["regperiod"]*12;
         if ($params["idprotection"]) {
-            $Joker->AddParam( "privacy" , "keep");
+            $reqParams["privacy" ] = "keep";
         }
-        $Joker->DoTransaction("domain-renew",$params);
+        $Joker->ExecuteAction("domain-renew", $reqParams);
     } else {
         // TODO: Add Privacy. What about additional domain years?
-        $Joker->NewRequest();
-        $Joker->AddParam( "domain", $idn_domain );
-        $Joker->DoTransaction("domain-redeem",$params);
+        $reqParams = Array();
+        $reqParams["domain"] = $idn_domain;
+        $Joker->ExecuteAction("domain-redeem", $reqParams);
     }
 
-    if ($Joker->getValue("Err1")) {
-        $values['error'] = $Joker->getValue("Err1");
+    if ($Joker->hasError()) {
+        $values['error'] = $Joker->getError();
     }
 
     return $values;
@@ -478,25 +495,24 @@ function joker_RenewDomain($params) {
 
 function joker_CreateOwnerContact($params) {
     $params = injectDomainObjectIfNecessary($params);
-    $params = joker_NormalizeContactDetails($params);
+    $params = joker_CleanupContactDetails($params);
 
     $errorMsgs = array();
 
-    $Joker = new CJokerInterface;
 
-    $Joker->NewRequest();
-    $Joker->AddParam( "tld", $params["tld"] );
-    //$Joker->AddParam( "fax", "" );
-    $Joker->AddParam( "phone", $params["fullphonenumber"] );
-    $Joker->AddParam( "country", $params["country"] );
-    $Joker->AddParam( "postal-code", $params["postcode"] );
-    $Joker->AddParam( "state", $params["state"] );
-    $Joker->AddParam( "city", $params["city"] );
-    $Joker->AddParam( "email", $params["email"] );
-    $Joker->AddParam( "address-1", $params["address1"] );
-    $Joker->AddParam( "address-2", $params["address2"] );
-    $Joker->AddParam( "name", $params["firstname"].' '.$params["lastname"] );
-    $Joker->AddParam( "organization", $params["companyname"] );
+    $reqParams = Array();
+    $reqParams["tld"] = $params["tld"];
+    //$reqParams["fax"] = "";
+    $reqParams["phone"] = $params["fullphonenumber"];
+    $reqParams["country"] = $params["country"];
+    $reqParams["postal-code"] = $params["postcode"];
+    $reqParams["state"] = $params["state"];
+    $reqParams["city"] = $params["city"];
+    $reqParams["email"] = $params["email"];
+    $reqParams["address-1"] = $params["address1"];
+    $reqParams["address-2"] = $params["address2"];
+    $reqParams["name"] = $params["firstname"].' '.$params["lastname"];
+    $reqParams["organization"] = $params["companyname"];
 
     if ($params['domainObj']->getLastTLDSegment() == 'us') {
 
@@ -526,15 +542,15 @@ function joker_CreateOwnerContact($params) {
             case 'C11':
             case 'C12':
             case 'C21':
-                $Joker->AddParam( "nexus-category", $nexus );
+                $reqParams["nexus-category"] = $nexus;
                 break;
             case 'C31':
             case 'C32':
-                $Joker->AddParam( "nexus-category", $nexus );
-                $Joker->AddParam( "nexus-category-country", $countrycode);
+                $reqParams["nexus-category"] = $nexus;
+                $reqParams["nexus-category-country"] = $countrycode;
                 break;
         }
-        $Joker->AddParam( "app-purpose", $purpose );
+        $reqParams["app-purpose"] = $purpose;
 
     } elseif ($params['domainObj']->getLastTLDSegment() == 'uk') {
 
@@ -569,16 +585,18 @@ function joker_CreateOwnerContact($params) {
         } else {
             $uklegaltype="IND";
         }
-        $Joker->AddParam( "account-type", $uklegaltype );
-        $Joker->AddParam( "company-number", $params["additionalfields"]['Company ID Number'] );
+        $reqParams["account-type"] = $uklegaltype;
+        $reqParams["company-number"] = $params["additionalfields"]['Company ID Number'];
 
     } elseif ($params['domainObj']->getLastTLDSegment() == 'eu') {
-        $Joker->AddParam( "lang", "EN" );
+        $reqParams["lang"] = "EN";
     }
-    $Joker->DoTransaction("contact-create", $params);
 
-    if ($Joker->getValue("Err1")) {
-        $values["error"] = "Registrant: ".$Joker->getValue("Err1");
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction("contact-create", $reqParams);
+
+    if ($Joker->hasError()) {
+        $values["error"] = "Registrant: ".$Joker->getError();
         return $values;
     }
 
@@ -590,12 +608,12 @@ function joker_CreateOwnerContact($params) {
 
     $start_time = time();
     while (!$error && !$handle && ($start_time + $timeout) >= time()) {
-        $Joker->NewRequest();
-        $Joker->AddParam("Proc-ID", $procid);
-        $Joker->DoTransaction("result-retrieve", $params);
+        $reqParams = Array();
+        $reqParams["Proc-ID"] = $procid;
+        $Joker->ExecuteAction("result-retrieve", $reqParams);
 
-        if ($Joker->getValue("Err1")) {
-            $values["error"] = "Registrant: ".$Joker->getValue("Err1");
+        if ($Joker->hasError()) {
+            $values["error"] = "Registrant: ".$Joker->getError();
             $error = true;
         }
 
@@ -624,34 +642,33 @@ function joker_CreateOwnerContact($params) {
 
 function joker_CreateAdminContact($params) {
     $params = injectDomainObjectIfNecessary($params);
-    $params = joker_NormalizeContactDetails($params);
+    $params = joker_CleanupContactDetails($params);
 
     $errorMsgs = array();
 
-    $Joker = new CJokerInterface;
-
-    $Joker->NewRequest();
-    $Joker->AddParam( "tld", $params["tld"] );
-    //$Joker->AddParam( "fax", "" );
-    $Joker->AddParam( "phone", $params["adminfullphonenumber"] );
-    $Joker->AddParam( "country", $params["admincountry"] );
-    $Joker->AddParam( "postal-code", $params["adminpostcode"] );
-    $Joker->AddParam( "state", $params["adminstate"] );
-    $Joker->AddParam( "city", $params["admincity"] );
-    $Joker->AddParam( "email", $params["adminemail"] );
-    $Joker->AddParam( "address-1", $params["adminaddress1"] );
-    $Joker->AddParam( "address-2", $params["adminaddress2"] );
-    $Joker->AddParam( "name", $params["adminfirstname"].' '.$params["adminlastname"] );
-    $Joker->AddParam( "organization", $params["admincompanyname"] );
+    $reqParams = Array();
+    $reqParams["tld"] = $params["tld"];
+    //$reqParams["fax"] = "";
+    $reqParams["phone"] = $params["adminfullphonenumber"];
+    $reqParams["country"] = $params["admincountry"];
+    $reqParams["postal-code"] = $params["adminpostcode"];
+    $reqParams["state"] = $params["adminstate"];
+    $reqParams["city"] = $params["admincity"];
+    $reqParams["email"] = $params["adminemail"];
+    $reqParams["address-1"] = $params["adminaddress1"];
+    $reqParams["address-2"] = $params["adminaddress2"];
+    $reqParams["name"] = $params["adminfirstname"].' '.$params["adminlastname"];
+    $reqParams["organization"] = $params["admincompanyname"];
 
     if ($params['domainObj']->getLastTLDSegment() == 'eu') {
-        $Joker->AddParam( "lang", "EN" );
+        $reqParams["lang"] = "EN";
     }
 
-    $Joker->DoTransaction("contact-create", $params);
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction("contact-create", $reqParams);
 
-    if ($Joker->getValue("Err1")) {
-        $values["error"] = "Admin: ".$Joker->getValue("Err1");
+    if ($Joker->hasError()) {
+        $values["error"] = "Admin: ".$Joker->getError();
         return $values;
     }
 
@@ -663,12 +680,12 @@ function joker_CreateAdminContact($params) {
 
     $start_time = time();
     while (!$error && !$handle && ($start_time + $timeout) >= time()) {
-        $Joker->NewRequest();
-        $Joker->AddParam("Proc-ID", $procid);
-        $Joker->DoTransaction("result-retrieve", $params);
+        $reqParams = Array();
+        $reqParams["Proc-ID"] = $procid;
+        $Joker->ExecuteAction("result-retrieve", $reqParams);
 
-        if ($Joker->getValue("Err1")) {
-            $values["error"] = "Admin: ".$Joker->getValue("Err1");
+        if ($Joker->hasError()) {
+            $values["error"] = "Admin: ".$Joker->getError();
             $error = true;
         }
 
@@ -701,13 +718,15 @@ function joker_GetContactDetails($params) {
 
     $idn_domain = $params['original']['domainObj']->getDomain(true);
     
-    $Joker = new CJokerInterface;
-    $Joker->AddParam( "domain", $idn_domain );
-    $Joker->AddParam( "internal", 1 );
-    $Joker->DoTransaction('query-whois', $params);
+    $reqParams = Array();
+    $reqParams["domain"] = $idn_domain;
+    $reqParams["internal"] = 1;
 
-    if ($Joker->getValue("Err1")) {
-        $values["error"] = $Joker->getValue("Err1");
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction('query-whois', $reqParams);
+
+    if ($Joker->hasError()) {
+        $values["error"] = $Joker->getError();
         return $values;
     }
 
@@ -735,12 +754,12 @@ function joker_GetContactDetails($params) {
     );
 
     foreach($contacts as $type => $handle) {
-        $Joker->NewRequest();
-        $Joker->AddParam( "contact", $handle );
-        $Joker->DoTransaction('query-whois', $params);
+        $reqParams = Array();
+        $reqParams["contact"] = $handle;
+        $Joker->ExecuteAction('query-whois', $reqParams);
 
-        if ($Joker->getValue("Err1")) {
-            //$values["error"] = $Joker->getValue("Err1");
+        if ($Joker->hasError()) {
+            //$values["error"] = $Joker->getError();
             continue;
         }
 
@@ -765,14 +784,6 @@ function joker_GetContactDetails($params) {
     return $values;
 }
 
-/**
- * Obtain the registrant contact email address and return it to be used for the
- * domain reminders.
- *
- * @param array $params
- *
- * @return array
- */
 function joker_GetRegistrantContactEmailAddress(array $params)
 {
     $params = injectDomainObjectIfNecessary($params);
@@ -780,13 +791,15 @@ function joker_GetRegistrantContactEmailAddress(array $params)
 
     $idn_domain = $params['original']['domainObj']->getDomain(true);
 
-    $Joker = new CJokerInterface;
-    $Joker->AddParam( "domain", $idn_domain );
-    $Joker->AddParam( "internal", 1 );
-    $Joker->DoTransaction('query-whois', $params);
+    $reqParams = Array();
+    $reqParams["domain"] = $idn_domain;
+    $reqParams["internal"] = 1;
 
-    if ($Joker->getValue("Err1")) {
-        $values["error"] = $Joker->getValue("Err1");
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction('query-whois', $reqParams);
+
+    if ($Joker->hasError()) {
+        $values["error"] = $Joker->getError();
         return $values;
     }
 
@@ -797,38 +810,26 @@ function joker_GetRegistrantContactEmailAddress(array $params)
 
 function joker_SaveContactDetails($params) {
     $params = injectDomainObjectIfNecessary($params);
-    $params = joker_NormalizeContactDetails($params);
+    $params = joker_CleanupContactDetails($params);
     
     $errorMsgs = array();
-
-    require (ROOTDIR."/includes/countriescallingcodes.php");
-
+    
     $idn_domain = $params['original']['domainObj']->getDomain(true);
 
-    $Joker = new CJokerInterface;
-
-    $Joker->NewRequest();
-    $Joker->AddParam( "domain", $idn_domain );
-
-    $phonenumber = $params["contactdetails"]["Registrant"]["Phone"];
-    $country = $params["contactdetails"]["Registrant"]["Country"];
-    $phoneprefix = $countrycallingcodes[$country];
-    if ((substr($phonenumber,0,1)!="+") && ($phoneprefix)) {
-        $params["contactdetails"]["Registrant"]["Phone"] = "+".$phoneprefix.".".$phonenumber;
-    }
-
-    $Joker->AddParam( "fax", $params["contactdetails"]["Registrant"]["Fax"] );
-    $Joker->AddParam( "phone", $params["contactdetails"]["Registrant"]["Phone"] );
-    $Joker->AddParam( "country", $params["contactdetails"]["Registrant"]["Country"] );
-    $Joker->AddParam( "postal-code", $params["contactdetails"]["Registrant"]["Postcode"] );
-    $Joker->AddParam( "state", $params["contactdetails"]["Registrant"]["State"] );
-    $Joker->AddParam( "city", $params["contactdetails"]["Registrant"]["City"] );
-    $Joker->AddParam( "email", $params["contactdetails"]["Registrant"]["Email"] );
-    $Joker->AddParam( "address-1", $params["contactdetails"]["Registrant"]["Address 1"] );
-    $Joker->AddParam( "address-2", $params["contactdetails"]["Registrant"]["Address 2"] );
-    //$Joker->AddParam( "title", $params["contactdetails"]["Registrant"]["Job Title"] );
-    $Joker->AddParam( "name", $params["contactdetails"]["Registrant"]["First Name"].' '.$params["contactdetails"]["Registrant"]["Last Name"] );
-    $Joker->AddParam( "organization", $params["contactdetails"]["Registrant"]["Organisation Name"] );
+    $reqParams = Array();
+    $reqParams["domain"] = $idn_domain;
+    $reqParams["fax"] = $params["contactdetails"]["Registrant"]["Fax"];
+    $reqParams["phone"] = $params["contactdetails"]["Registrant"]["Phone"];
+    $reqParams["country"] = $params["contactdetails"]["Registrant"]["Country"];
+    $reqParams["postal-code"] = $params["contactdetails"]["Registrant"]["Postcode"];
+    $reqParams["state"] = $params["contactdetails"]["Registrant"]["State"];
+    $reqParams["city"] = $params["contactdetails"]["Registrant"]["City"];
+    $reqParams["email"] = $params["contactdetails"]["Registrant"]["Email"];
+    $reqParams["address-1"] = $params["contactdetails"]["Registrant"]["Address 1"];
+    $reqParams["address-2"] = $params["contactdetails"]["Registrant"]["Address 2"];
+    //$reqParams["title"] = $params["contactdetails"]["Registrant"]["Job Title"];
+    $reqParams["name"] = $params["contactdetails"]["Registrant"]["First Name"].' '.$params["contactdetails"]["Registrant"]["Last Name"];
+    $reqParams["organization"] = $params["contactdetails"]["Registrant"]["Organisation Name"];
 
     if ($params['original']['domainObj']->getLastTLDSegment() == 'us') {
 
@@ -858,15 +859,15 @@ function joker_SaveContactDetails($params) {
             case 'C11':
             case 'C12':
             case 'C21':
-                $Joker->AddParam( "nexus-category", $nexus );
+                $reqParams["nexus-category"] = $nexus;
                 break;
             case 'C31':
             case 'C32':
-                $Joker->AddParam( "nexus-category", $nexus );
-                $Joker->AddParam( "nexus-category-country", $countrycode);
+                $reqParams["nexus-category"] = $nexus;
+                $reqParams["nexus-category-country"] = $countrycode;
                 break;
         }
-        $Joker->AddParam( "app-purpose", $purpose );
+        $reqParams["app-purpose"] = $purpose;
 
     } elseif ($params['original']['domainObj']->getLastTLDSegment() == 'uk') {
 
@@ -901,25 +902,27 @@ function joker_SaveContactDetails($params) {
         } else {
             $uklegaltype="IND";
         }
-        $Joker->AddParam( "account-type", $uklegaltype );
-        $Joker->AddParam( "company-number", $params["additionalfields"]['Company ID Number'] );
+        $reqParams["account-type"] = $uklegaltype;
+        $reqParams["company-number"] = $params["additionalfields"]['Company ID Number'];
 
     } elseif ($params['original']['domainObj']->getLastTLDSegment() == 'eu') {
-        $Joker->AddParam( "lang", "EN" );
-    }
-    $Joker->DoTransaction("domain-owner-change", $params);
-
-    if ($Joker->getValue("Err1")) {
-        $errorMsgs[] = "Registrant: ".$Joker->getValue("Err1");
+        $reqParams["lang"] = "EN";
     }
 
-    $Joker->NewRequest();
-    $Joker->AddParam( "domain", $idn_domain );
-    $Joker->AddParam( "internal", 1 );
-    $Joker->DoTransaction('query-whois', $params);
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction("domain-owner-change", $reqParams);
 
-    if ($Joker->getValue("Err1")) {
-        $errorMsgs[] = "Domain Info: ".$Joker->getValue("Err1");
+    if ($Joker->hasError()) {
+        $errorMsgs[] = "Registrant: ".$Joker->getError();
+    }
+
+    $reqParams = Array();
+    $reqParams["domain"] = $idn_domain;
+    $reqParams["internal"] = 1;
+    $Joker->ExecuteAction('query-whois', $reqParams);
+
+    if ($Joker->hasError()) {
+        $errorMsgs[] = "Domain Info: ".$Joker->getError();
     } else {
 
         $contacts = array(
@@ -936,26 +939,26 @@ function joker_SaveContactDetails($params) {
                 if ((substr($phonenumber,0,1)!="+") && ($phoneprefix)) {
                     $params["contactdetails"][$type]["Phone"] = "+".$phoneprefix.".".$phonenumber;
                 }
-                $Joker->NewRequest();
-                $Joker->AddParam( "handle", $handle );
-                $Joker->AddParam( "fax", $params["contactdetails"][$type]["Fax"] );
-                $Joker->AddParam( "phone", $params["contactdetails"][$type]["Phone"] );
-                $Joker->AddParam( "country", $params["contactdetails"][$type]["Country"] );
-                $Joker->AddParam( "postal-code", $params["contactdetails"][$type]["Postcode"] );
-                $Joker->AddParam( "state", $params["contactdetails"][$type]["State"] );
-                $Joker->AddParam( "city", $params["contactdetails"][$type]["City"] );
-                $Joker->AddParam( "email", $params["contactdetails"][$type]["Email"] );
-                $Joker->AddParam( "address-1", $params["contactdetails"][$type]["Address 1"] );
-                $Joker->AddParam( "address-2", $params["contactdetails"][$type]["Address 2"] );
-                //$Joker->AddParam( "title", $params["contactdetails"][$type]["Job Title"] );
-                $Joker->AddParam( "name", $params["contactdetails"][$type]["First Name"].' '.$params["contactdetails"][$type]["Last Name"] );
-                $Joker->AddParam( "organization", $params["contactdetails"][$type]["Organisation Name"] );
+                $reqParams = Array();
+                $reqParams["handle"] = $handle;
+                $reqParams["fax"] = $params["contactdetails"][$type]["Fax"];
+                $reqParams["phone"] = $params["contactdetails"][$type]["Phone"];
+                $reqParams["country"] = $params["contactdetails"][$type]["Country"];
+                $reqParams["postal-code"] = $params["contactdetails"][$type]["Postcode"];
+                $reqParams["state"] = $params["contactdetails"][$type]["State"];
+                $reqParams["city"] = $params["contactdetails"][$type]["City"];
+                $reqParams["email"] = $params["contactdetails"][$type]["Email"];
+                $reqParams["address-1"] = $params["contactdetails"][$type]["Address 1"];
+                $reqParams["address-2"] = $params["contactdetails"][$type]["Address 2"];
+                //$reqParams["title"] = $params["contactdetails"][$type]["Job Title"];
+                $reqParams["name"] = $params["contactdetails"][$type]["First Name"].' '.$params["contactdetails"][$type]["Last Name"];
+                $reqParams["organization"] = $params["contactdetails"][$type]["Organisation Name"];
                 if ($params['original']['domainObj']->getLastTLDSegment() == 'eu') {
-                    $Joker->AddParam( "lang", "EN" );
+                    $reqParams["lang"] = "EN";
                 }
-                $Joker->DoTransaction('contact-modify', $params);
-                if ($Joker->getValue("Err1")) {
-                    $errorMsgs[] = "$type: ".$Joker->getValue("Err1");
+                $Joker->ExecuteAction('contact-modify', $reqParams);
+                if ($Joker->hasError()) {
+                    $errorMsgs[] = "$type: ".$Joker->getError();
                 }
             }
         }
@@ -976,13 +979,14 @@ function joker_GetEPPCode($params) {
 
     $idn_domain = $params['original']['domainObj']->getDomain(true);
 
-    $Joker = new CJokerInterface;
-    $Joker->NewRequest();
-    $Joker->AddParam( "domain", $idn_domain );
-    $Joker->DoTransaction("domain-transfer-get-auth-id", $params);
+    $reqParams = Array();
+    $reqParams["domain"] = $idn_domain;
+ 
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction("domain-transfer-get-auth-id", $reqParams);
 
-    if ($Joker->getValue("Err1")) {
-        $values["error"] = $Joker->getValue("Err1");
+    if ($Joker->hasError()) {
+        $values["error"] = $Joker->getError();
     }
 
     return $values;
@@ -1009,26 +1013,28 @@ function joker_FetchEPPCode($params) {
 
     $idn_domain = $params['original']['domainObj']->getDomain(true);
 
-    $Joker = new CJokerInterface;
+    $reqParams = Array();
+    $reqParams["domain"] = $idn_domain;
 
-    $Joker->AddParam( "domain", $idn_domain );
-    $Joker->DoTransaction("domain-transfer-get-auth-id", $params);
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction("domain-transfer-get-auth-id", $reqParams);
 
-    if ($Joker->getValue("Err1")) {
-        $values["error"] = $Joker->getValue("Err1");
+    if ($Joker->hasError()) {
+        $values["error"] = $Joker->getError();
         return $values;
     }
 
-    $Joker->NewRequest();
-    $Joker->AddParam( "rtype", "domain-transfer-get-auth-id" );
-    $Joker->AddParam( "objid", $idn_domain );
-    $Joker->AddParam( "showall", 1 );
-    $Joker->AddParam( "limit", 1 );
-    $Joker->DoTransaction('result-list',$params);
+    $reqParams = Array();
+    $reqParams["rtype"] = "domain-transfer-get-auth-id";
+    $reqParams["objid"] = $idn_domain;
+    $reqParams["showall"] = 1;
+    $reqParams["limit"] = 1;
+    
+    $Joker->ExecuteAction('result-list', $reqParams);
 
     $procid = false;
-    if ($Joker->getValue("Err1")) {
-        $values["error"] = $Joker->getValue("Err1");
+    if ($Joker->hasError()) {
+        $values["error"] = $Joker->getError();
     } elseif ($Joker->getHeaderValue('Row-Count') > 0) {
         $resultList = $Joker->getResponseList();
         $procid = $resultList[0][2];
@@ -1043,11 +1049,11 @@ function joker_FetchEPPCode($params) {
 
         $start_time = time();
         while (!$error && !$authid && ($start_time + $timeout) >= time()) {
-            $Joker->NewRequest();
-            $Joker->AddParam("Proc-ID", $procid);
-            $rawMsg = $Joker->DoTransaction("result-retrieve", $params);
-            if ($Joker->getValue("Err1")) {
-                $values["error"] = "EPP-Code: ".$Joker->getValue("Err1");
+            $reqParams = Array();
+            $reqParams["Proc-ID"] = $procid;
+            $rawMsg = $Joker->ExecuteAction("result-retrieve", $reqParams);
+            if ($Joker->hasError()) {
+                $values["error"] = "EPP-Code: ".$Joker->getError();
                 $error = true;
             }
 
@@ -1083,14 +1089,15 @@ function joker_RegisterNameserver($params) {
 
     $params = injectDomainObjectIfNecessary($params);
 
-    $Joker = new CJokerInterface;
-    $Joker->NewRequest();
-    $Joker->AddParam( "host", $params["nameserver"] );
-    $Joker->AddParam( "ip", $params["ipaddress"] );
-    $Joker->DoTransaction('ns-create', $params);
+    $reqParams = Array();
+    $reqParams["host"] = $params["nameserver"];
+    $reqParams["ip"] = $params["ipaddress"];
 
-    if ($Joker->getValue("Err1")) {
-        $error = $Joker->getValue("Err1");
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction('ns-create', $reqParams);
+
+    if ($Joker->hasError()) {
+        $error = $Joker->getError();
     }
 
     $values["error"] = $error;
@@ -1103,15 +1110,16 @@ function joker_ModifyNameserver($params) {
 
     $params = injectDomainObjectIfNecessary($params);
 
-    $Joker = new CJokerInterface;
-    $Joker->NewRequest();
-    $Joker->AddParam( "host", $params["nameserver"] );
-    //$Joker->AddParam( "OldIP", $params["currentipaddress"] );
-    $Joker->AddParam( "ip", $params["newipaddress"] );
-    $Joker->DoTransaction('ns-modify',$params);
+    $reqParams = Array();
+    $reqParams["host"] = $params["nameserver"];
+    //$reqParams["old_ip"] = $params["currentipaddress"];
+    $reqParams["ip"] = $params["newipaddress"];
 
-    if ($Joker->getValue("Err1")) {
-        $error = $Joker->getValue("Err1");
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction('ns-modify', $reqParams);
+
+    if ($Joker->hasError()) {
+        $error = $Joker->getError();
     }
 
     $values["error"] = $error;
@@ -1124,15 +1132,15 @@ function joker_DeleteNameserver($params) {
 
     $params = injectDomainObjectIfNecessary($params);
 
-    $Joker = new CJokerInterface;
-    $Joker->NewRequest();
-    $Joker->AddParam( "host", $params["nameserver"] );
-    $Joker->DoTransaction('ns-delete', $params);
+    $reqParams = Array();
+    $reqParams["host"] = $params["nameserver"];
 
-    if ($Joker->getValue("Err1")) {
-        $error = $Joker->getValue("Err1");
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction('ns-delete', $reqParams);
+
+    if ($Joker->hasError()) {
+        $error = $Joker->getError();
     }
-
     $values["error"] = $error;
 
     return $values;
@@ -1146,13 +1154,14 @@ function joker_SyncManual($params) {
 
     $idn_domain = $params['original']['domainObj']->getDomain(true);
 
-    $Joker = new CJokerInterface;
-    $Joker->AddParam( "pattern", $idn_domain );
-    //$Joker->AddParam( "showstatus", 1 );
-    $Joker->DoTransaction('query-domain-list',$params);
+    $reqParams = Array();
+    $reqParams["pattern"] = $idn_domain;
+    //$reqParams["showstatus"] = 1;
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction('query-domain-list', $reqParams);
 
-    if ($Joker->getValue("Err1")) {
-        $values["error"] = $Joker->getValue("Err1");
+    if ($Joker->hasError()) {
+        $values["error"] = $Joker->getError();
         return $values;
     }
 
@@ -1160,7 +1169,6 @@ function joker_SyncManual($params) {
 
     if (count($resultList) > 0) {
         //$status = explode(",",$resultList[0]['domain_status']);
-        print $resultList[0]['expiration_date'];
         $time_grace = intval($GLOBALS['CONFIG']['OrderDaysGrace']) * 86400;
         $sync_data = array(
             'domainid' => $params['domainid'],
@@ -1189,13 +1197,16 @@ function joker_Sync($params) {
 
     $idn_domain = $params['original']['domainObj']->getDomain(true);
 
-    $Joker = new CJokerInterface;
-    $Joker->AddParam( "pattern", $idn_domain );
-    //$Joker->AddParam( "showstatus", 1 );
-    $Joker->DoTransaction('query-domain-list',$params);
+    
+    $reqParams = Array();
+    $reqParams["pattern"] = $idn_domain;
+    //$reqParams["showstatus"] = 1;
 
-    if ($Joker->getValue("Err1")) {
-        $values['error'] = $Joker->getValue("Err1");
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction('query-domain-list', $reqParams);
+
+    if ($Joker->hasError()) {
+        $values['error'] = $Joker->getError();
     }
 
     $resultList = $Joker->getResponseList();
@@ -1224,15 +1235,18 @@ function joker_TransferSync($params){
 
     $idn_domain = $params['original']['domainObj']->getDomain(true);
 
-    $Joker = new CJokerInterface;
-    $Joker->AddParam( "rtype", "domain-transfer-in-reseller" );
-    $Joker->AddParam( "objid", $idn_domain );
-    $Joker->AddParam( "showall", 1 );
-    $Joker->AddParam( "limit", 1 );
-    $Joker->DoTransaction('result-list',$params);
+    
+    $reqParams = Array();
+    $reqParams["rtype"] = "domain-transfer-in-reseller";
+    $reqParams["objid"] = $idn_domain;
+    $reqParams["showall"] = 1;
+    $reqParams["limit"] = 1;
 
-    if ($Joker->getValue("Err1")) {
-        $values['error'] = $Joker->getValue("Err1");
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction('result-list', $reqParams);
+
+    if ($Joker->hasError()) {
+        $values['error'] = $Joker->getError();
     } elseif ($Joker->getHeaderValue('Row-Count') > 0) {
         $resultList = $Joker->getResponseList();
         $status = $resultList[0][5];
@@ -1258,21 +1272,29 @@ function joker_TransferSync($params){
 
 }
 
-/**
- * With the new ICCAN rules requiring validation of addresses and other contact data,
- * joker has added a number of validation filters on the contact details. Sometimes they
- * make sense, other times we need to normalize the data we are sending to them to ensure
- * they accept it.
- *
- * This function is called each place we get user inputed contact details to send to joker.
- *
- * Currently it filters the Canadian postal codes, which are normally stored as ANA NAN but
- * joker expects to be ANANAN.
- *
- * @param  array $params the full set of parameters we are going to pull from to send to joker
- * @return array $params the same set of parameters, normalized for joker's filtering
- */
-function joker_NormalizeContactDetails($params) {
+function joker_CleanupContactDetails($params) {
+
+    $contacttypes = array("Registrant", "Admin", "Tech", "Billing");
+    foreach ($contacttypes as $ctype) {
+        if (isset($params["contactdetails"][$ctype]["Country"])) {
+            $country = $params["contactdetails"][$ctype]["Country"];
+            if ($country == 'CA') {
+                $params["contactdetails"][$ctype]["Postcode"] = preg_replace('/\s/', '', $params["contactdetails"][$ctype]["Postcode"]);
+            }
+        }
+    }
+
+    if (isset($params["contactdetails"]["Registrant"]["Phone"])) {
+        // import $countrycallingcodes from WHMCS includes
+        require_once (ROOTDIR."/includes/countriescallingcodes.php");
+        
+        $country = $params["contactdetails"]["Registrant"]["Country"];
+        $phoneprefix = $countrycallingcodes[$country];
+        $phonenumber = $params["contactdetails"]["Registrant"]["Phone"];
+        if ((substr($phonenumber,0,1)!="+") && ($phoneprefix)) {
+            $params["contactdetails"]["Registrant"]["Phone"] = "+".$phoneprefix.".".ltrim($phonenumber,'0');
+        }
+    }
 
     if (isset($params["country"]) && $params["country"] == 'NL') {
         $modifyKeys = array('fullstate', 'state', 'statecode', 'adminfullstate', 'adminstate');
@@ -1287,16 +1309,6 @@ function joker_NormalizeContactDetails($params) {
 
     if (isset($params["admincountry"]) && $params["admincountry"] == 'CA') {
         $params["adminpostcode"] = preg_replace('/\s/', '', $params["adminpostcode"]);
-    }
-
-    $contacttypes = array("Registrant", "Admin", "Tech");
-    for ($i=0;$i<=2;$i++) {
-        if (isset($params["contactdetails"][$contacttypes[$i]]["Country"])) {
-            $country = $params["contactdetails"][$contacttypes[$i]]["Country"];
-            if ($country == 'CA') {
-                $params["contactdetails"][$contacttypes[$i]]["Postcode"] = preg_replace('/\s/', '', $params["contactdetails"][$contacttypes[$i]]["Postcode"]);
-            }
-        }
     }
 
     return $params;
@@ -1317,24 +1329,37 @@ function joker_AdminCustomButtonArray($params) {
     return $buttonarray;
 }
 
-class CJokerInterface {
-    private $PostString;
-    private $RawData;
+class DMAPIClient {
     private $Values;
     private $List;
     private $Header;
     private $Command;
     private $Session;
+    private $Errors;
+    private $Username;
+    private $Password;
+    private $Testmode;
 
-    public function __construct() {
+    private static $instance = null;
+
+    private function __construct($username,$password,$testmode) {
         $this->Session = false;
-        $this->NewRequest();
+        $this->Testmode = $testmode;
+        $this->Username = $username;
+        $this->Password = $password;
+        $this->Reset();
     }
 
-    public function NewRequest() {
+    public static function getInstance($params) {
+        if (self::$instance == false) {
+            self::$instance = new self($params["Username"],$params["Password"],$params["TestMode"]);
+        }
+        return self::$instance;
+    }
+
+    private function Reset() {
         $this->Command = "";
-        $this->PostString = "";
-        $this->RawData = "";
+        $this->Errors = array();
         $this->Header = array();
         $this->Values = array();
         $this->List = array();
@@ -1353,18 +1378,23 @@ class CJokerInterface {
     }
 
     private function AddError( $error ) {
-        $this->Values[ "ErrCount" ] = "1";
-        $this->Values[ "Err1" ] = $error;
+        $this->Errors[] = $error;
     }
 
-    private function ParseResponse( $buffer ) {
-        if (!$buffer || !is_string($buffer)) {
-            $errorMsg = "Cannot parse empty response from server - ";
-            $errorMsg .= "Please try again later";
-            $this->AddError($errorMsg);
+    public function hasError() {
+        return count($this->Errors) > 0;
+    }
+
+    public function getError() {
+        return implode(";",$this->Errors);
+    }
+
+    private function ParseResponse( $response ) {
+        if (!$response || !is_string($response)) {
+            $this->AddError("Request failed: Empty response - Please try again later");
             return false;
         }
-        $responseParts = explode("\n\n", $buffer,2);
+        $responseParts = explode("\n\n", $response,2);
 
         $this->Header = $this->parseKeyValueList($responseParts[0]);
         $rawBody = "";
@@ -1425,7 +1455,9 @@ class CJokerInterface {
         }
         $lines = explode("\n", $data);
         foreach( $lines as $line) {
-            if (empty($line)) continue;
+            if (empty($line)) {
+                continue;
+            }
             $values = explode($separator, $line);
             if (count($columnTitles) > 0) {
                 $columns = array();
@@ -1440,80 +1472,76 @@ class CJokerInterface {
         return $result;
     }
 
-    public function AddParam($Name, $Value) {
-        $this->PostString = $this->PostString . $Name . "=" . urlencode( $Value ) . "&";
-    }
-
-    public function DoTransaction($command, $params, $processResponse = true) {
+    public function ExecuteAction($command,$params) {
         if ($this->Session === false) {
-            $loginResult = $this->Login($params);
+            $loginResult = $this->Login();
             if ($this->Session === false) {
                 return $loginResult;
             }
         }
-        return $this->SendCommand($command, $params, $processResponse);
+        return $this->SendCommand($command, $params);
     }
     
-    private function Login($params) {
-        $cachedPostString = $this->PostString;
-        $this->PostString = "";
-        $this->AddParam( "username", $params["Username"] );
-        $this->AddParam( "password", $params["Password"] );
+    private function Login() {
+        $params = array(
+            "username" => $this->Username,
+            "password" => $this->Password
+        );
         $result = $this->SendCommand("login", $params);
-        $this->PostString = $cachedPostString;
         return $result;
     }
 
 
-    private function SendCommand($command, $params, $processResponse = true) {
+    private function SendCommand($command,$params) {
+        $this->Reset();
         $this->Command = $command;
         $this->Values = Array();
-        if ($params['TestMode']) {
+        if ($this->Testmode) {
             $host = 'dmapi.ote.joker.com';
         } else {
             $host = 'dmapi.joker.com';
         }
         $whmcsVersion = \App::getVersion();
-        $this->AddParam('Engine', 'WHMCS' . $whmcsVersion->getMajor() . '.' . $whmcsVersion->getMinor());
+        $params['Engine'] = 'WHMCS' . $whmcsVersion->getMajor() . '.' . $whmcsVersion->getMinor();
 
         if (!$this->Session === false) {
-            $this->AddParam('auth-sid', $this->Session);
+            $params['auth-sid'] = $this->Session;
         }
+
+        $postString = "";
+        foreach($params as $name => $value) {
+            $postString .= $name . "=" . urlencode( $value ) . "&";
+        }
+
         $ch = curl_init();
         $url = "https://".$host."/request/".$command;
         curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $this->PostString);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postString);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($ch, CURLOPT_TIMEOUT, 60);
         $response = curl_exec($ch);
-        $this->RawData = '';
 
         if (curl_error($ch)) {
-            $responseMsgToPropagate = "CURL Error: ".curl_errno($ch)." - ".curl_error($ch);
-            $this->AddError($responseMsgToPropagate);
-        } elseif (!$response) {
-            $responseMsgToPropagate = 'Empty data response from server - Please try again later';
-        } else {
-            $this->RawData = $responseMsgToPropagate = $response;
+            $this->AddError("CURL Error: ".curl_errno($ch)." - ".curl_error($ch));
         }
         curl_close ($ch);
 
-        if ($processResponse && $response) {
+        if ($response) {
             $this->ParseResponse($response);
         }
         if (function_exists("logModuleCall")) {
             logModuleCall(
                 'joker',
                 $command,
-                $this->PostString,
-                $responseMsgToPropagate,
+                $postString,
+                ($this->hasError()?$this->getError():$response),
                 '',
-                array($params["Username"], $params["Password"])
+                array($this->Username, $this->Password)
             );
         }
-        return $this->RawData;
+        return $response;
     }
 
 }
