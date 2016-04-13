@@ -31,7 +31,7 @@
   *                                                                          *
   * To install, create a folder named joker in modules/registrar             *
   * of your whmcs installation root directory and copy                       *
-  * joker.php, eppcode.tpl logo.gif into it.                                 *
+  * joker.php, hooks.php, eppcode.tpl, logo.gif into it.                     *
   * Then in WHMCS admin menu, go to registrar module settings and select     *
   * Joker, and configure.                                                    *
   ****************************************************************************
@@ -1148,43 +1148,11 @@ function joker_DeleteNameserver($params) {
 }
 
 function joker_SyncManual($params) {
-    $values = array();
-
-    $params = injectDomainObjectIfNecessary($params);
-
-    $idn_domain = $params['original']['domainObj']->getDomain(true);
-
-    $reqParams = Array();
-    $reqParams["pattern"] = $idn_domain;
-    //$reqParams["showstatus"] = 1;
-    $Joker = DMAPIClient::getInstance($params);
-    $Joker->ExecuteAction('query-domain-list', $reqParams);
-
-    if ($Joker->hasError()) {
-        $values["error"] = $Joker->getError();
-        return $values;
-    }
-
-    $resultList = $Joker->getResponseList();
-
-    if (count($resultList) > 0) {
-        //$status = explode(",",$resultList[0]['domain_status']);
-        $time_grace = intval($GLOBALS['CONFIG']['OrderDaysGrace']) * 86400;
-        $sync_data = array(
-            'domainid' => $params['domainid'],
-            'expirydate' => $resultList[0]['expiration_date'],
-            'nextduedate' => date('Ymd', strtotime($resultList[0]['expiration_date']) - $time_grace),
-        );
-        $expDate = new DateTime($values['expirydate'],new DateTimeZone('UTC'));
-        $now = new DateTime(null,new DateTimeZone('UTC'));
-        if ($expDate > $now) {
-            $sync_data['status'] = 'active';
-        }
-        $result = localAPI('updateclientdomain', $sync_data, $params['AdminUser']);
-    } else {
-        $values['error'] = "Domain not found";
-    }
+    $values = joker_Sync($params);
+    print_r($values);
     if (!isset($values['error'])) {
+        $values['domainid'] = $params['domainid'];
+        localAPI('updateclientdomain', $values, $params['AdminUser']);
         $values['message'] = '(Warning) You must refresh page to see the changes';
     }
     return $values;
@@ -1218,9 +1186,30 @@ function joker_Sync($params) {
         $now = new DateTime(null,new DateTimeZone('UTC'));
         if ($expDate > $now) {
             $values['status'] = "Active";
+        } else {
+            $values['status'] = "Expired";
         }
     } else {
-        $values['error'] = "Domain not found";
+            $reqParams["rtype"] = "domain-r*";
+            $reqParams["objid"] = $idn_domain;
+            $reqParams["showall"] = 1;
+            $reqParams["limit"] = 1;
+            $reqParams["period"] = 1;
+
+            $Joker = DMAPIClient::getInstance($params);
+            $Joker->ExecuteAction('result-list', $reqParams);
+
+            if ($Joker->hasError()) {
+                $values['error'] = $Joker->getError();
+            } elseif ($Joker->getHeaderValue('Row-Count') > 0) {
+                $resultList = $Joker->getResponseList();
+                $status = $resultList[0][5];
+                if ($status == "nack") {
+                    $values['status'] = "Cancelled";
+                }
+            } else {
+                $values['error'] = "Domain/Order not found";
+            }
     }
     return $values;
 
