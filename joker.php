@@ -222,7 +222,7 @@ function joker_SaveEmailForwarding($params) {
 
     foreach (array_keys($params["prefix"]) AS $key) {
         if ($params["forwardto"][$key]) {
-            $dnsrecords[] = $params["prefix"][$key] . " MAILFW 0 " . $params["forwardto"][$key] . " 86400 0 0 0";
+            $dnsrecords[] = $params["prefix"][$key] . " MAILFW 0 " . $params["forwardto"][$key] . " 86400 0 0 1";
         }
     }
 
