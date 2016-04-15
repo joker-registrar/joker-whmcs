@@ -33,7 +33,7 @@
   ****************************************************************************
 */
 
-require_once(dirname(__FILE__).'/dmapiclient.php');
+require_once dirname(__FILE__).'/dmapiclient.php';
 
 function joker_getConfigArray() {
 $configarray = array(

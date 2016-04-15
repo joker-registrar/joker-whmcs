@@ -27,9 +27,10 @@
 */
 
 require_once dirname(__FILE__).'/dmapiclient.php';
-require_once dirname(__FILE__)."/../../../includes/registrarfunctions.php";
 
 function joker_widget_info($vars) {
+
+    require_once dirname(__FILE__)."/../../../includes/registrarfunctions.php";
 
     $config = getRegistrarConfigOptions('joker');
 
