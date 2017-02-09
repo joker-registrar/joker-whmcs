@@ -166,7 +166,7 @@ function joker_GetEmailForwarding($params) {
 
     $Joker = DMAPIClient::getInstance($params);
     $Joker->ExecuteAction("dns-zone-get", $reqParams);
-    
+
     $values = array();
 
     if (!$Joker->hasError()) {
@@ -526,7 +526,7 @@ function joker_CreateOwnerContact($params) {
         $reqParams["x-ficora-is-finnish"] = $params["additionalfields"]['x-ficora-is-finnish'];
 
         if ($reqParams["x-ficora-type"] == 'privateperson') {
-            if ($reqParams["x-ficora-is-finnish"] == 'yes') {
+            if ($reqParams["x-ficora-is-finnish"] == 'Y') {
                 $reqParams["x-ficora-identity"] = $params["additionalfields"]["x-ficora-registernumber"];
             } else {
                 $reqParams["x-ficora-birthdate"] = $params["additionalfields"]["x-ficora-registernumber"];
@@ -619,48 +619,16 @@ function joker_CreateOwnerContact($params) {
     }
 
     $Joker = DMAPIClient::getInstance($params);
-    $Joker->ExecuteAction("contact-create", $reqParams);
+    $Joker->ExecuteAction("v2/contact/create", $reqParams);
 
     if ($Joker->hasError()) {
         $values["error"] = "Registrant: ".$Joker->getError();
         return $values;
     }
 
-    $procid = $Joker->getHeaderValue("Proc-ID");
-
-    $timeout = 30; //seconds
-
-    $handle = false; $error = false;
-
-    $start_time = time();
-    while (!$error && !$handle && ($start_time + $timeout) >= time()) {
-        $reqParams = Array();
-        $reqParams["Proc-ID"] = $procid;
-        $Joker->ExecuteAction("result-retrieve", $reqParams);
-
-        if ($Joker->hasError()) {
-            $values["error"] = "Registrant: ".$Joker->getError();
-            $error = true;
-        }
-
-        if ($Joker->getValue("Completion-Status") == "ack") {
-            $handle = $Joker->getValue("Object-Name");
-        }
-        if ($Joker->getValue("Completion-Status") == 'nack') {
-            $values["error"] = "Registrant: Contact creation failed";
-            $error = true;
-        }
-        if (!$error && !$handle) {
-            usleep(500);
-        }
-    }
-
-    if (!$error && !$handle) {
-        $values["error"] = "Registrant: Contact creation timeout";
-    }
+    $handle = $Joker->getValue('handle');
 
     $values['handle'] = $handle;
-    $values['time_spent'] = (time() - $start_time);
 
     return $values;
 
@@ -691,48 +659,16 @@ function joker_CreateAdminContact($params) {
     }
 
     $Joker = DMAPIClient::getInstance($params);
-    $Joker->ExecuteAction("contact-create", $reqParams);
+    $Joker->ExecuteAction("contact/create", $reqParams);
 
     if ($Joker->hasError()) {
         $values["error"] = "Admin: ".$Joker->getError();
         return $values;
     }
 
-    $procid = $Joker->getHeaderValue("Proc-ID");
-
-    $timeout = 30; //seconds
-
-    $handle = false; $error = false;
-
-    $start_time = time();
-    while (!$error && !$handle && ($start_time + $timeout) >= time()) {
-        $reqParams = Array();
-        $reqParams["Proc-ID"] = $procid;
-        $Joker->ExecuteAction("result-retrieve", $reqParams);
-
-        if ($Joker->hasError()) {
-            $values["error"] = "Admin: ".$Joker->getError();
-            $error = true;
-        }
-
-        if ($Joker->getValue("Completion-Status") == "ack") {
-            $handle = $Joker->getValue("Object-Name");
-        }
-        if ($Joker->getValue("Completion-Status") == 'nack') {
-            $values["error"] = "Admin: Contact creation failed";
-            $error = true;
-        }
-        if (!$error && !$handle) {
-            usleep(500);
-        }
-    }
-
-    if (!$error && !$handle) {
-        $values["error"] = "Admin: Contact creation timeout";
-    }
+    $handle = $Joker->getHeaderValue("handle");
 
     $values['handle'] = $handle;
-    $values['time_spent'] = (time() - $start_time);
 
     return $values;
 }
@@ -743,7 +679,7 @@ function joker_GetContactDetails($params) {
     $values = array();
 
     $idn_domain = $params['original']['domainObj']->getDomain(true);
-    
+
     $reqParams = Array();
     $reqParams["domain"] = $idn_domain;
     $reqParams["internal"] = 1;
@@ -840,9 +776,9 @@ function joker_GetRegistrantContactEmailAddress(array $params)
 function joker_SaveContactDetails($params) {
     $params = injectDomainObjectIfNecessary($params);
     $params = joker_CleanupContactDetails($params);
-    
+
     $errorMsgs = array();
-    
+
     $idn_domain = $params['original']['domainObj']->getDomain(true);
 
     $reqParams = Array();
@@ -1010,7 +946,7 @@ function joker_GetEPPCode($params) {
 
     $reqParams = Array();
     $reqParams["domain"] = $idn_domain;
- 
+
     $Joker = DMAPIClient::getInstance($params);
     $Joker->ExecuteAction("domain-transfer-get-auth-id", $reqParams);
 
@@ -1030,7 +966,7 @@ function joker_FetchEPPCodeClient($params) {
         'vars' => joker_FetchEPPCode($params),
         'breadcrumb' => array( 'clientarea.php?action=domaindetails&domainid='.$params['domainid'].'&modop=custom&a=FetchEPPCode' => 'EPP Code' )
     );
-    
+
     return $values;
 }
 
@@ -1058,7 +994,7 @@ function joker_FetchEPPCode($params) {
     $reqParams["objid"] = $idn_domain;
     $reqParams["showall"] = 1;
     $reqParams["limit"] = 1;
-    
+
     $Joker->ExecuteAction('result-list', $reqParams);
 
     $procid = false;
@@ -1246,11 +1182,11 @@ function joker_Sync($params) {
     $reqParams = Array();
     $reqParams["pattern"] = $idn_domain;
     //$reqParams["showstatus"] = 1;
-    
+
 
     $Joker = DMAPIClient::getInstance($params);
     $Joker->ExecuteAction('query-domain-list', $reqParams);
-    
+
     if ($Joker->hasError()) {
         $values['error'] = $Joker->getError();
     }
@@ -1303,7 +1239,7 @@ function joker_TransferSync($params){
 
     $idn_domain = $params['domainObj']->getDomain(true);
 
-    
+
     $reqParams = Array();
     $reqParams["rtype"] = "domain-transfer-in-reseller";
     $reqParams["objid"] = $idn_domain;
@@ -1355,7 +1291,7 @@ function joker_CleanupContactDetails($params) {
     if (isset($params["contactdetails"]["Registrant"]["Phone"])) {
         // import $countrycallingcodes from WHMCS includes
         require_once (ROOTDIR."/includes/countriescallingcodes.php");
-        
+
         $country = $params["contactdetails"]["Registrant"]["Country"];
         $phoneprefix = $countrycallingcodes[$country];
         $phonenumber = $params["contactdetails"]["Registrant"]["Phone"];
