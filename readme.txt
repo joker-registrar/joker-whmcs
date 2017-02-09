@@ -1,8 +1,8 @@
 -------------------------------------------------
  Joker.com registrar module for WHMCS
 -------------------------------------------------
-Version 1.0.0
-Tested with WHMCS 6.3
+Version 1.0.1
+Tested with WHMCS 7.0
 
 
 Features:

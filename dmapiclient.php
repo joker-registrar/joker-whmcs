@@ -97,7 +97,7 @@ class DMAPIClient {
         if (count($responseParts) > 1 ) {
             $rawBody = $responseParts[1];
         }
-        if (!isset($this->Header["Status-Code"]) || $this->Header["Status-Code"] !=0 ) {
+        if (!isset($this->Header["Status-Code"]) || ($this->Header["Status-Code"] !=0 && $this->Header["Status-Code"] != 1000) ) {
             $this->AddError(
                 "DMAPI request '" . $this->Command . "' failed: ". $this->Header["Status-Code"]
                     . (isset($this->Header["Status-Text"])?" ".$this->Header["Status-Text"]:'')
@@ -198,7 +198,7 @@ class DMAPIClient {
             $host = 'dmapi.joker.com';
         }
         $whmcsVersion = \App::getVersion();
-        $params['Engine'] = 'WHMCS' . $whmcsVersion->getMajor() . '.' . $whmcsVersion->getMinor();
+        $agent = 'WHMCS' . $whmcsVersion->getMajor() . '.' . $whmcsVersion->getMinor();
 
         if (!$this->Session === false) {
             $params['auth-sid'] = $this->Session;
@@ -208,15 +208,22 @@ class DMAPIClient {
         foreach($params as $name => $value) {
             $postString .= $name . "=" . urlencode( $value ) . "&";
         }
+        if (!empty($postString)) {
+            $postString = substr($postString,0,-1);
+        }
 
         $ch = curl_init();
         $url = "https://".$host."/request/".$command;
+        if (substr($command,0,3) === "v2/") {
+            $url = "https://".$host."/".$command;
+        }
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postString);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+        curl_setopt($ch, CURLOPT_USERAGENT, $agent);
         $response = curl_exec($ch);
 
         if (curl_error($ch)) {

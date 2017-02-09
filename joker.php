@@ -334,10 +334,13 @@ function joker_RegisterDomain($params) {
     if (isset($owner_result['error']) && $owner_result['error']) {
         return $owner_result;
     }
-    $admin_result = joker_CreateAdminContact($params);
-    if (isset($admin_result['error']) && $admin_result['error']) {
-        return $admin_result;
-    }
+    $admin_result = $owner_result;
+
+    // Don't use admin contact for now, to speed up registration
+    //$admin_result = joker_CreateAdminContact($params);
+    //if (isset($admin_result['error']) && $admin_result['error']) {
+    //    return $admin_result;
+    //}
 
     $params = injectDomainObjectIfNecessary($params);
 
@@ -347,13 +350,16 @@ function joker_RegisterDomain($params) {
 
     //#################################################################################################################
     //# IDN fix for Swedish language only. Otherwise language will be guessed by Joker depending on registrant country#
-    if ($params['domainObj']->isIdn() && $params['language'] == 'swedish') {
-        if (($params["tld"] == "co") || ($params["tld"] == "biz") || ($params["tld"] == "tel")){
-            $reqParams["language"] = "se";
-        } elseif (($params["tld"] == "com") || ($params["tld"] == "net") || ($params["tld"] == "li") || ($params["tld"] == "fr") || ($params["tld"] == "ch") || ($params["tld"] == "sg") || ($params["tld"] == "com.sg") || ($params["tld"] == "tv") || ($params["tld"] == "co.uk")){
-            $reqParams["language"] = "swe";
-        } else {
-            $reqParams["language"] = "sv";
+    if ($params['domainObj']->isIdn()) {
+        $reqParams["language"] = "";
+        if ($params['language'] == 'swedish') {
+            if (($params["tld"] == "co") || ($params["tld"] == "biz") || ($params["tld"] == "tel")){
+                $reqParams["language"] = "se";
+            } elseif (($params["tld"] == "com") || ($params["tld"] == "net") || ($params["tld"] == "li") || ($params["tld"] == "fr") || ($params["tld"] == "ch") || ($params["tld"] == "sg") || ($params["tld"] == "com.sg") || ($params["tld"] == "tv") || ($params["tld"] == "co.uk")){
+                $reqParams["language"] = "swe";
+            } else {
+                $reqParams["language"] = "sv";
+            }
         }
     }
     //# END IDN FIX
@@ -511,7 +517,30 @@ function joker_CreateOwnerContact($params) {
     $reqParams["name"] = $params["firstname"].' '.$params["lastname"];
     $reqParams["organization"] = $params["companyname"];
 
-    if ($params['domainObj']->getLastTLDSegment() == 'us') {
+    if ($params['domainObj']->getLastTLDSegment() == 'fi') {
+        unset($reqParams["name"]);
+        $reqParams["fname"] = $params["firstname"];
+        $reqParams["lname"] = $params["lastname"];
+
+        $reqParams["x-ficora-type"] = $params["additionalfields"]['x-ficora-type'];
+        $reqParams["x-ficora-is-finnish"] = $params["additionalfields"]['x-ficora-is-finnish'];
+
+        if ($reqParams["x-ficora-type"] == 'privateperson') {
+            if ($reqParams["x-ficora-is-finnish"] == 'yes') {
+                $reqParams["x-ficora-identity"] = $params["additionalfields"]["x-ficora-registernumber"];
+            } else {
+                $reqParams["x-ficora-birthdate"] = $params["additionalfields"]["x-ficora-registernumber"];
+                if (!preg_match("/^\d{4}-\d{2}-\d{2}$/",$reqParams["x-ficora-birthdate"]) ) {
+                    $date = date_parse($reqParams["x-ficora-birthdate"]);
+                    if ($date['day'] !== false && $date['month'] !== false && $date['year'] !== false) {
+                        $reqParams["x-ficora-birthdate"] = sprintf("%04d-%02d-%02d", $date['year'], $date['month'], $date['day']);
+                    }
+                }
+            }
+        } else {
+            $reqParams["x-ficora-registernumber"] = $params["additionalfields"]["x-ficora-registernumber"];
+        }
+    } elseif ($params['domainObj']->getLastTLDSegment() == 'us') {
 
         $nexus = $params["additionalfields"]['Nexus Category'];
         $countrycode = $params["additionalfields"]['Nexus Country'];
@@ -744,6 +773,8 @@ function joker_GetContactDetails($params) {
     $values["Registrant"]["Phone"] = $Joker->getValue("domain.phone");
     $values["Registrant"]["Fax"] = $Joker->getValue("domain.fax");
 
+    // Don't allow to change admin, tech and billing contact for now
+    /*
     $contacts = array(
         "Admin" => $Joker->getValue("domain.admin-c"),
         "Tech" => $Joker->getValue("domain.tech-c"),
@@ -777,6 +808,7 @@ function joker_GetContactDetails($params) {
         $values[$type]["Phone"] = $Joker->getValue("contact.phone");
         $values[$type]["Fax"] = $Joker->getValue("contact.fax");
     }
+    */
 
     return $values;
 }

@@ -1,0 +1,37 @@
+/*
+*****************************************************************
+*  Please add the following lines to the file
+*                                                                              
+*  resources/domains/additionalfields.php
+*
+*  of your WHMCS installation to add support for .fi domains
+*
+*****************************************************************
+*/
+
+// .FI
+
+$additionaldomainfields[".fi"][] = array(
+    "Name" => "x-ficora-is-finnish",
+    "DisplayName" => "Finnish person or organization",
+    "Type" => "dropdown",
+    "Options" => "no,yes,",
+    "Required" => true,
+);
+
+$additionaldomainfields[".fi"][] = array(
+    "Name" => "x-ficora-type",
+    "DisplayName" => "Legal Type",
+    "Type" => "dropdown",
+    "Options" => "privateperson|Private Person,company|Company,corporation|Corporation,institution|Institution,politicalparty|Political party,township|Township,government|Government,publiccommunity|Public community",
+    "Required" => true,
+);
+
+$additionaldomainfields[".fi"][] = array(
+    "Name" => "x-ficora-registernumber",
+    "DisplayName" => "Identity Number, Date if Birth of Register Number",
+    "Type" => "text",
+    "Size" => "40",
+    "Description" => "Depending on your <em>Legal Type</em> :<br> Please provide your <strong>birthdate</strong> if your are a private person and not finnish.<br> Please provide your <strong>identity number</strong> if your are a private person and finnish.<br> In all other cases, please provides your organizations <strong>registration number</strong>.",
+    "Required" => true,
+);
