@@ -522,7 +522,7 @@ function joker_CreateOwnerContact($params) {
         $reqParams["fname"] = $params["firstname"];
         $reqParams["lname"] = $params["lastname"];
 
-        $reqParams["x-ficora-type"] = $params["additionalfields"]['x-ficora-type'];
+        $reqParams["x-ficora-type"] = strtolower($params["additionalfields"]['x-ficora-type']);
         $reqParams["x-ficora-is-finnish"] = $params["additionalfields"]['x-ficora-is-finnish'];
 
         if ($reqParams["x-ficora-type"] == 'privateperson') {

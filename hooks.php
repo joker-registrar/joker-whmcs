@@ -51,3 +51,55 @@ function joker_widget_info($vars) {
 
 add_hook("AdminHomeWidgets",1,"joker_widget_info");
 
+
+function joker_validate_additional_domain_fields($params)
+{
+    $additionaldomainfields = null;
+    if (file_exists(ROOTDIR.'/includes/additionaldomainfields.php')) {
+        include(ROOTDIR.'/includes/additionaldomainfields.php');
+    }
+
+    $errors = array();
+    foreach ($_SESSION['cart']['domains'] as $domain) {
+        $tld = explode('.',$domain['domain'],2)[1];
+
+        if (isset($additionaldomainfields)) {
+            $fields = $additionaldomainfields["." . $tld];
+        } else {
+            $additflds = new WHMCS\Domains\AdditionalFields();
+            $additflds->setTLD($tld);
+            $fields = $additflds->getFields();
+        }
+
+        $additionalfields = array();
+        $displaynames = array();
+
+        foreach($fields as $key => $def) {
+            $additionalfields[$def['Name']] = $domain['fields'][$key];
+            $displaynames[$def['Name']] = isset($def['DisplayName'])?$def['DisplayName']:$def['Name'];
+        }
+
+        if (isset($additionalfields['x-ficora-registernumber']) && !empty($additionalfields['x-ficora-registernumber'])) {
+            if ($additionalfields["x-ficora-type"] == 'privateperson') {
+                if (strtolower($additionalfields["x-ficora-is-finnish"]) == 'yes') {
+                    if (!preg_match("/^[0-9]{2}[0,1][0-9][0-9]{2}[-+A][0-9]{3}[0-9A-Z]$/", $additionalfields['x-ficora-registernumber']) ) {
+                        $errors[] = $displaynames['x-ficora-registernumber'].": Please provide a valid identity number ({$domain['domain']})";
+                    }
+                } else {
+                    if (!preg_match("/^\d{4}-\d{2}-\d{2}$/", $additionalfields['x-ficora-registernumber']) ) {
+                        $date = date_parse($additionalfields['x-ficora-registernumber']);
+                        if ($date['day'] === false || $date['month'] === false || $date['year'] === false) {
+                            $errors[] = $displaynames['x-ficora-registernumber'].": Please provide a valid birthdate ({$domain['domain']})";
+                        }
+                    }
+                }
+            } else {
+                // check if valid registernumber
+                //$errors[] = $displaynames['x-ficora-registernumber'].': No valid register number.';
+            }
+        }
+    }
+    return count($errors) ? $errors : '';
+}
+
+add_hook('ShoppingCartValidateDomainsConfig', 1, 'joker_validate_additional_domain_fields');
