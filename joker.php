@@ -1354,13 +1354,15 @@ function joker_CleanupContactDetails($params) {
 
     if (isset($params["contactdetails"]["Registrant"]["Phone"])) {
         // import $countrycallingcodes from WHMCS includes
-        require_once (ROOTDIR."/includes/countriescallingcodes.php");
-        
-        $country = $params["contactdetails"]["Registrant"]["Country"];
-        $phoneprefix = $countrycallingcodes[$country];
-        $phonenumber = $params["contactdetails"]["Registrant"]["Phone"];
-        if ((substr($phonenumber,0,1)!="+") && ($phoneprefix)) {
-            $params["contactdetails"]["Registrant"]["Phone"] = "+".$phoneprefix.".".ltrim($phonenumber,'0');
+        if (file_exists(ROOTDIR.'/includes/additionaldomainfields.php')) {
+            require_once (ROOTDIR."/includes/countriescallingcodes.php");
+
+            $country = $params["contactdetails"]["Registrant"]["Country"];
+            $phoneprefix = $countrycallingcodes[$country];
+            $phonenumber = $params["contactdetails"]["Registrant"]["Phone"];
+            if ((substr($phonenumber,0,1)!="+") && ($phoneprefix)) {
+                $params["contactdetails"]["Registrant"]["Phone"] = "+".$phoneprefix.".".ltrim($phonenumber,'0');
+            }
         }
     }
 
