@@ -41,6 +41,7 @@ $configarray = array(
  "Username" => array( "Type" => "text", "Size" => "20", "Description" => "Enter your Joker Reseller Account Username here", ),
  "Password" => array( "Type" => "password", "Size" => "20", "Description" => "Enter your Joker Reseller Account Password here", ),
  "TestMode" => array( "Type" => "yesno", "Description" => "Tick this box to use the Joker OT&E system: <a href=\"http://www.ote.joker.com/\" target=\"_blank\">http://www.ote.joker.com/</a>"),
+ "SyncNextDueDate" => array( "Type" => "yesno", "Description" => "Tick this box to also sync the next due date with the expiry date", ),
  "DefaultNameservers" => array( "Type" => "yesno", "Description" => "Tick this box to use the default Joker nameservers for new domain registrations", ),
 );
 
@@ -1199,6 +1200,9 @@ $params = injectDomainObjectIfNecessary($params);
     if (count($resultList) > 0) {
         //$status = explode(",",$resultList[0]['domain_status']);
         $values['expirydate'] = $resultList[0]['expiration_date'];
+        if ($params['SyncNextDueDate']) {
+            $values['nextduedate'] = $resultList[0]['expiration_date'];
+        }
         $expDate = new DateTime($values['expirydate'],new DateTimeZone('UTC'));
         $now = new DateTime(null,new DateTimeZone('UTC'));
         if ($expDate > $now) {
@@ -1261,6 +1265,9 @@ function joker_Sync($params) {
     if (count($resultList) > 0) {
         //$status = explode(",",$resultList[0]['domain_status']);
         $values['expirydate'] = $resultList[0]['expiration_date'];
+        if ($params['SyncNextDueDate']) {
+            $values['nextduedate'] = $resultList[0]['expiration_date'];
+        }
         $expDate = new DateTime($values['expirydate'],new DateTimeZone('UTC'));
         $now = new DateTime(null,new DateTimeZone('UTC'));
         if ($expDate > $now) {
