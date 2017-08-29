@@ -38,11 +38,13 @@ require_once dirname(__FILE__).'/dmapiclient.php';
 function joker_getConfigArray() {
 $configarray = array(
  "Description" => array("Type" => "System", "Value"=>"Don't have an Joker Account yet? Get one at: <a href=\"http://joker.com/\" target=\"_blank\">http://joker.com/</a>"),
- "Username" => array( "Type" => "text", "Size" => "20", "Description" => "Enter your Joker Reseller Account Username here", ),
- "Password" => array( "Type" => "password", "Size" => "20", "Description" => "Enter your Joker Reseller Account Password here", ),
+ "ApiKey" => array( "Type" => "password", "Size" => "20", "Description" => "Enter your Joker API key here", ),
+ "Username" => array( "Type" => "text", "Size" => "20", "Description" => "Enter your Joker Reseller Account Username here (only used if no API key is provided)", ),
+ "Password" => array( "Type" => "password", "Size" => "20", "Description" => "Enter your Joker Reseller Account Password here (only used if no API key is provided)", ),
  "TestMode" => array( "Type" => "yesno", "Description" => "Tick this box to use the Joker OT&E system: <a href=\"http://www.ote.joker.com/\" target=\"_blank\">http://www.ote.joker.com/</a>"),
  "SyncNextDueDate" => array( "Type" => "yesno", "Description" => "Tick this box to also sync the next due date with the expiry date", ),
  "DefaultNameservers" => array( "Type" => "yesno", "Description" => "Tick this box to use the default Joker nameservers for new domain registrations", ),
+ "NoCron" => array( "Type" => "yesno", "Description" => "Tick this box to use this module without its own cron job", ),
 );
 
 return $configarray;
@@ -373,6 +375,7 @@ function joker_RegisterDomain($params) {
     $reqParams["admin-c"] = $admin_result['handle'];
     $reqParams["tech-c"] = $admin_result['handle'];
     $reqParams["billing-c"] = $admin_result['handle'];
+    $reqParams["cltrid"] = 'domreg-'.$params['domainid'];
 
 
     if ($params["DefaultNameservers"]) {
@@ -394,8 +397,9 @@ function joker_RegisterDomain($params) {
     $Joker = DMAPIClient::getInstance($params);
     $Joker->ExecuteAction("domain-register", $reqParams);
 
-    $values["error"] = $Joker->getError();
-
+    if ($Joker->hasError()) {
+        $values["error"] = $Joker->getError();
+    }
     return $values;
 
 }
@@ -1211,6 +1215,7 @@ $params = injectDomainObjectIfNecessary($params);
             $values['status'] = "Expired";
         }
     } else {
+            $reqParams = Array();
             $reqParams["rtype"] = "domain-r*";
             $reqParams["objid"] = $idn_domain;
             $reqParams["showall"] = 1;
@@ -1276,6 +1281,7 @@ function joker_Sync($params) {
             $values['expired'] = true;
         }
     } else {
+        $reqParams = Array();
         $reqParams["rtype"] = "domain-r*";
         $reqParams["objid"] = $idn_domain;
         $reqParams["showall"] = 1;

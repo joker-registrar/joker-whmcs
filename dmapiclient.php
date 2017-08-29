@@ -34,21 +34,23 @@ class DMAPIClient {
     private $Errors;
     private $Username;
     private $Password;
+    private $ApiKey;
     private $Testmode;
 
     private static $instance = null;
 
-    private function __construct($username,$password,$testmode) {
+    private function __construct($username,$password,$apiKey,$testmode) {
         $this->Session = false;
         $this->Testmode = $testmode;
         $this->Username = $username;
         $this->Password = $password;
+        $this->ApiKey = $apiKey;
         $this->Reset();
     }
 
     public static function getInstance($params) {
         if (self::$instance == false) {
-            self::$instance = new self($params["Username"],$params["Password"],$params["TestMode"]);
+            self::$instance = new self($params["Username"],$params["Password"],$params["ApiKey"],$params["TestMode"]);
         }
         return self::$instance;
     }
@@ -179,10 +181,16 @@ class DMAPIClient {
     }
 
     private function Login() {
-        $params = array(
-            "username" => $this->Username,
-            "password" => $this->Password
-        );
+        if (empty($this->ApiKey)) {
+            $params = array(
+                "username" => $this->Username,
+                "password" => $this->Password
+            );
+        } else {
+            $params = array(
+                "api-key" => $this->ApiKey
+            );
+        }
         $result = $this->SendCommand("login", $params);
         return $result;
     }

@@ -103,3 +103,15 @@ function joker_validate_additional_domain_fields($params)
 }
 
 add_hook('ShoppingCartValidateDomainsConfig', 1, 'joker_validate_additional_domain_fields');
+
+function joker_after_domain_registration($vars) {
+    if($vars["params"]["registrar"]=="joker" && !$vars["params"]["NoCron"] && $vars["params"]["status"] == "Active"){
+        $values = array();
+        $values['status'] = "Pending";
+        $values['expirydate'] = '0000-00-00';
+        $values['domainid'] = $vars['params']['domainid'];
+        localAPI('updateclientdomain', $values, $vars['params']['AdminUser']);
+    }
+}
+
+add_hook("AfterRegistrarRegistration",1,"joker_after_domain_registration");
