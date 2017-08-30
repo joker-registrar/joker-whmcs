@@ -426,6 +426,7 @@ function joker_TransferDomain($params) {
     $reqParams["admin-c"] = $owner_result['handle'];
     $reqParams["tech-c"] = $owner_result['handle'];
     $reqParams["billing-c"] = $owner_result['handle'];
+    $reqParams["autorenew"] = '0';
 
 
     $nslist = array();
