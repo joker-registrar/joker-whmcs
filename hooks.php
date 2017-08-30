@@ -104,6 +104,7 @@ function joker_validate_additional_domain_fields($params)
 
 add_hook('ShoppingCartValidateDomainsConfig', 1, 'joker_validate_additional_domain_fields');
 
+/*
 function joker_after_domain_registration($vars) {
     if($vars["params"]["registrar"]=="joker" && !$vars["params"]["NoCron"] && $vars["params"]["status"] == "Active"){
         $values = array();
@@ -115,3 +116,4 @@ function joker_after_domain_registration($vars) {
 }
 
 add_hook("AfterRegistrarRegistration",1,"joker_after_domain_registration");
+*/

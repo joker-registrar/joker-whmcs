@@ -35,16 +35,19 @@
 
 require_once dirname(__FILE__).'/dmapiclient.php';
 
+//use WHMCS\Domains\DomainLookup\ResultsList;
+//use WHMCS\Domains\DomainLookup\SearchResult;
+
 function joker_getConfigArray() {
 $configarray = array(
  "Description" => array("Type" => "System", "Value"=>"Don't have an Joker Account yet? Get one at: <a href=\"http://joker.com/\" target=\"_blank\">http://joker.com/</a>"),
  "ApiKey" => array( "Type" => "password", "Size" => "20", "Description" => "Enter your Joker API key here", ),
- "Username" => array( "Type" => "text", "Size" => "20", "Description" => "Enter your Joker Reseller Account Username here (only used if no API key is provided)", ),
- "Password" => array( "Type" => "password", "Size" => "20", "Description" => "Enter your Joker Reseller Account Password here (only used if no API key is provided)", ),
+ "Username" => array( "Type" => "text", "Size" => "20", "Description" => "If you don't use API key, enter your Joker Reseller Account Username here", ),
+ "Password" => array( "Type" => "password", "Size" => "20", "Description" => "If you don't use API key, enter your Joker Reseller Account Password here", ),
  "TestMode" => array( "Type" => "yesno", "Description" => "Tick this box to use the Joker OT&E system: <a href=\"http://www.ote.joker.com/\" target=\"_blank\">http://www.ote.joker.com/</a>"),
  "SyncNextDueDate" => array( "Type" => "yesno", "Description" => "Tick this box to also sync the next due date with the expiry date", ),
  "DefaultNameservers" => array( "Type" => "yesno", "Description" => "Tick this box to use the default Joker nameservers for new domain registrations", ),
- "NoCron" => array( "Type" => "yesno", "Description" => "Tick this box to use this module without its own cron job", ),
+ //"NoCron" => array( "Type" => "yesno", "Description" => "Tick this box to use this module without its own cron job", ),
 );
 
 return $configarray;
@@ -1180,6 +1183,106 @@ function joker_DeleteNameserver($params) {
     return $values;
 
 }
+
+function joker_IDProtectToggle($params)
+{
+    $values = array();
+    $params = injectDomainObjectIfNecessary($params);
+    $idn_domain = $params['original']['domainObj']->getDomain(true);
+
+    // id protection parameter
+    $protectEnable = (bool) $params['protectenable'];
+    
+    $reqParams = Array();
+    $reqParams["domain"] = $idn_domain;
+    $reqParams = Array();
+    $reqParams["pattern"] = $idn_domain;
+    $reqParams["pname"] = "privacy";
+    $reqParams["pvalue"] = $protectEnable?"pro":"off";
+
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction('domain-set-property', $reqParams);
+    
+    if ($Joker->hasError()) {
+        $values['error'] = $Joker->getError();
+    }
+
+    return $values;
+
+}
+
+/**
+ * Check Domain Availability.
+ *
+ * Determine if a domain or group of domains are available for
+ * registration or transfer.
+ *
+ * @param array $params common module parameters
+ * @see https://developers.whmcs.com/domain-registrars/module-parameters/
+ *
+ * @see \WHMCS\Domains\DomainLookup\SearchResult
+ * @see \WHMCS\Domains\DomainLookup\ResultsList
+ *
+ * @throws Exception Upon domain availability check failure.
+ *
+ * @return \WHMCS\Domains\DomainLookup\ResultsList An ArrayObject based collection of \WHMCS\Domains\DomainLookup\SearchResult results
+ */
+
+/*
+function joker_CheckAvailability($params)
+{
+    // availability check parameters
+    $searchTerm = $params['searchTerm'];
+    $punyCodeSearchTerm = $params['punyCodeSearchTerm'];
+    $tldsToInclude = $params['tldsToInclude'];
+    $isIdnDomain = (bool) $params['isIdnDomain'];
+    $premiumEnabled = (bool) $params['premiumEnabled'];
+    // Build post data
+    $postfields = array(
+        'searchTerm' => $searchTerm,
+        'tldsToSearch' => $tldsToInclude,
+        'includePremiumDomains' => $premiumEnabled,
+    );
+    if ($result) {
+        
+        $results = new ResultsList();
+        foreach ($api->getFromResponse('domains') as $domain) {
+            // Instantiate a new domain search result object
+            $searchResult = new SearchResult($domain['sld'], $domain['tld']);
+            // Determine the appropriate status to return
+            if ($domain['status'] == 'available') {
+                $status = SearchResult::STATUS_NOT_REGISTERED;
+            } elseif ($domain['status'] == 'registered') {
+                $status = SearchResult::STATUS_REGISTERED;
+            } elseif ($domain['status'] == 'reserved') {
+                $status = SearchResult::STATUS_RESERVED;
+            } else {
+                $status = SearchResult::STATUS_TLD_NOT_SUPPORTED;
+            }
+            $searchResult->setStatus($status);
+            // Return premium information if applicable
+            if ($domain['isPremiumName']) {
+                $searchResult->setPremiumDomain(true);
+                $searchResult->setPremiumCostPricing(
+                    array(
+                        'register' => $domain['premiumRegistrationPrice'],
+                        'renew' => $domain['premiumRenewPrice'],
+                        'CurrencyCode' => 'USD',
+                    )
+                );
+            }
+            // Append to the search results list
+            $results->append($searchResult);
+        }
+        return $results;
+    } else {
+        return array(
+            'error' => $e->getMessage(),
+        );
+    }
+
+}
+*/
 
 function joker_SyncManual($params) {
 $params = injectDomainObjectIfNecessary($params);
