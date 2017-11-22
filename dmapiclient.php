@@ -86,6 +86,10 @@ class DMAPIClient {
     public function getError() {
         return implode(";",$this->Errors);
     }
+    
+    public function getUsername() {
+        return $this->Username;
+    }
 
     private function ParseResponse( $response ) {
         if (!$response || !is_string($response)) {
@@ -192,6 +196,9 @@ class DMAPIClient {
             );
         }
         $result = $this->SendCommand("login", $params);
+        if ($this->Session !== false && empty($this->Username)) {
+            $this->Username = $this->getHeaderValue('User-Login');
+        }
         return $result;
     }
 

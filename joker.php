@@ -3,7 +3,7 @@
   ****************************************************************************
   *                                                                          *
   * The MIT License (MIT)                                                    *
-  * Copyright (c) 2016 Joker.com                                             *
+  * Copyright (c) 2017 Joker.com                                             *
   * Permission is hereby granted, free of charge, to any person obtaining a  *
   * copy of this software and associated documentation files                 *
   * (the "Software"), to deal in the Software without restriction, including *
@@ -35,8 +35,8 @@
 
 require_once dirname(__FILE__).'/dmapiclient.php';
 
-//use WHMCS\Domains\DomainLookup\ResultsList;
-//use WHMCS\Domains\DomainLookup\SearchResult;
+use WHMCS\Domains\DomainLookup\ResultsList;
+use WHMCS\Domains\DomainLookup\SearchResult;
 
 function joker_getConfigArray() {
 $configarray = array(
@@ -47,7 +47,7 @@ $configarray = array(
  "TestMode" => array( "Type" => "yesno", "Description" => "Tick this box to use the Joker OT&E system: <a href=\"http://www.ote.joker.com/\" target=\"_blank\">http://www.ote.joker.com/</a>"),
  "SyncNextDueDate" => array( "Type" => "yesno", "Description" => "Tick this box to also sync the next due date with the expiry date", ),
  "DefaultNameservers" => array( "Type" => "yesno", "Description" => "Tick this box to use the default Joker nameservers for new domain registrations", ),
- //"NoCron" => array( "Type" => "yesno", "Description" => "Tick this box to use this module without its own cron job", ),
+ "CronJob" => array( "Type" => "yesno", "Description" => "Tick this box to use this module with its own cron job (see Readme before activation!)", "Default" => false ),
 );
 
 return $configarray;
@@ -628,49 +628,15 @@ function joker_CreateOwnerContact($params) {
     }
 
     $Joker = DMAPIClient::getInstance($params);
-    $Joker->ExecuteAction("contact-create", $reqParams);
+    $Joker->ExecuteAction("v2/contact/create", $reqParams);
 
     if ($Joker->hasError()) {
         $values["error"] = "Registrant: ".$Joker->getError();
         return $values;
     }
 
-    $procid = $Joker->getHeaderValue("Proc-ID");
-
-    $timeout = 30; //seconds
-
-    $handle = false; $error = false;
-
-    $start_time = time();
-    while (!$error && !$handle && ($start_time + $timeout) >= time()) {
-        $reqParams = Array();
-        $reqParams["Proc-ID"] = $procid;
-        $Joker->ExecuteAction("result-retrieve", $reqParams);
-
-        if ($Joker->hasError()) {
-            $values["error"] = "Registrant: ".$Joker->getError();
-            $error = true;
-        }
-
-        if ($Joker->getValue("Completion-Status") == "ack") {
-            $handle = $Joker->getValue("Object-Name");
-        }
-        if ($Joker->getValue("Completion-Status") == 'nack') {
-            $values["error"] = "Registrant: Contact creation failed";
-            $error = true;
-        }
-        if (!$error && !$handle) {
-            usleep(500);
-        }
-    }
-
-    if (!$error && !$handle) {
-        $values["error"] = "Registrant: Contact creation timeout";
-    }
-
+    $handle = $Joker->getValue('handle');
     $values['handle'] = $handle;
-    $values['time_spent'] = (time() - $start_time);
-
     return $values;
 
 }
@@ -700,49 +666,15 @@ function joker_CreateAdminContact($params) {
     }
 
     $Joker = DMAPIClient::getInstance($params);
-    $Joker->ExecuteAction("contact-create", $reqParams);
+    $Joker->ExecuteAction("v2/contact/create", $reqParams);
 
     if ($Joker->hasError()) {
         $values["error"] = "Admin: ".$Joker->getError();
         return $values;
     }
 
-    $procid = $Joker->getHeaderValue("Proc-ID");
-
-    $timeout = 30; //seconds
-
-    $handle = false; $error = false;
-
-    $start_time = time();
-    while (!$error && !$handle && ($start_time + $timeout) >= time()) {
-        $reqParams = Array();
-        $reqParams["Proc-ID"] = $procid;
-        $Joker->ExecuteAction("result-retrieve", $reqParams);
-
-        if ($Joker->hasError()) {
-            $values["error"] = "Admin: ".$Joker->getError();
-            $error = true;
-        }
-
-        if ($Joker->getValue("Completion-Status") == "ack") {
-            $handle = $Joker->getValue("Object-Name");
-        }
-        if ($Joker->getValue("Completion-Status") == 'nack') {
-            $values["error"] = "Admin: Contact creation failed";
-            $error = true;
-        }
-        if (!$error && !$handle) {
-            usleep(500);
-        }
-    }
-
-    if (!$error && !$handle) {
-        $values["error"] = "Admin: Contact creation timeout";
-    }
-
+    $handle = $Joker->getValue('handle');
     $values['handle'] = $handle;
-    $values['time_spent'] = (time() - $start_time);
-
     return $values;
 }
 
@@ -1066,6 +998,7 @@ function joker_FetchEPPCode($params) {
     $reqParams["rtype"] = "domain-transfer-get-auth-id";
     $reqParams["objid"] = $idn_domain;
     $reqParams["showall"] = 1;
+    $reqParams["pending"] = 1;
     $reqParams["limit"] = 1;
     
     $Joker->ExecuteAction('result-list', $reqParams);
@@ -1195,8 +1128,6 @@ function joker_IDProtectToggle($params)
     $protectEnable = (bool) $params['protectenable'];
     
     $reqParams = Array();
-    $reqParams["domain"] = $idn_domain;
-    $reqParams = Array();
     $reqParams["pattern"] = $idn_domain;
     $reqParams["pname"] = "privacy";
     $reqParams["pvalue"] = $protectEnable?"pro":"off";
@@ -1229,7 +1160,7 @@ function joker_IDProtectToggle($params)
  * @return \WHMCS\Domains\DomainLookup\ResultsList An ArrayObject based collection of \WHMCS\Domains\DomainLookup\SearchResult results
  */
 
-/*
+
 function joker_CheckAvailability($params)
 {
     // availability check parameters
@@ -1238,52 +1169,54 @@ function joker_CheckAvailability($params)
     $tldsToInclude = $params['tldsToInclude'];
     $isIdnDomain = (bool) $params['isIdnDomain'];
     $premiumEnabled = (bool) $params['premiumEnabled'];
-    // Build post data
-    $postfields = array(
-        'searchTerm' => $searchTerm,
-        'tldsToSearch' => $tldsToInclude,
-        'includePremiumDomains' => $premiumEnabled,
-    );
-    if ($result) {
-        
-        $results = new ResultsList();
-        foreach ($api->getFromResponse('domains') as $domain) {
-            // Instantiate a new domain search result object
-            $searchResult = new SearchResult($domain['sld'], $domain['tld']);
-            // Determine the appropriate status to return
-            if ($domain['status'] == 'available') {
-                $status = SearchResult::STATUS_NOT_REGISTERED;
-            } elseif ($domain['status'] == 'registered') {
-                $status = SearchResult::STATUS_REGISTERED;
-            } elseif ($domain['status'] == 'reserved') {
-                $status = SearchResult::STATUS_RESERVED;
-            } else {
-                $status = SearchResult::STATUS_TLD_NOT_SUPPORTED;
-            }
-            $searchResult->setStatus($status);
-            // Return premium information if applicable
-            if ($domain['isPremiumName']) {
-                $searchResult->setPremiumDomain(true);
-                $searchResult->setPremiumCostPricing(
-                    array(
-                        'register' => $domain['premiumRegistrationPrice'],
-                        'renew' => $domain['premiumRenewPrice'],
-                        'CurrencyCode' => 'USD',
-                    )
-                );
-            }
-            // Append to the search results list
-            $results->append($searchResult);
+
+    $error = "";
+    
+    $results = new ResultsList();
+
+    foreach($tldsToInclude as $tld) {
+        $Joker = DMAPIClient::getInstance($params);
+        $domain = $searchTerm.$tld;
+        $reqParams = Array("domain" => $domain);
+        $Joker->ExecuteAction('domaincheck', $reqParams);
+        if ($Joker->hasError()) {
+            $error = $Joker->getError();
+            continue;
         }
-        return $results;
-    } else {
-        return array(
-            'error' => $e->getMessage(),
-        );
+        $searchResult = new SearchResult($searchTerm, $tld);
+        $status_row = $Joker->getValue('domain-status');
+        $status_arr = explode(':',$status_row,2);
+        $status_text = $status_arr[0];
+        $reason = count($status_arr)>1?trim($status_arr[1]):'';
+        switch($status_text) {
+            case 'free':
+            case 'available':
+                $status = SearchResult::STATUS_NOT_REGISTERED;
+                break;
+            default:
+            case 'unavailable':
+                $status=SearchResult::STATUS_REGISTERED;
+                break;
+        }
+        $searchResult->setStatus($status);
+        // Return premium information if applicable
+        /*
+        if ($domain['isPremiumName']) {
+            $searchResult->setPremiumDomain(true);
+            $searchResult->setPremiumCostPricing(
+                array(
+                    'register' => $domain['premiumRegistrationPrice'],
+                    'renew' => $domain['premiumRenewPrice'],
+                    'CurrencyCode' => 'USD',
+                )
+            );
+        }
+        */
+        $results->append($searchResult);
     }
 
+    return $results;
 }
-*/
 
 function joker_SyncManual($params) {
 $params = injectDomainObjectIfNecessary($params);
@@ -1323,6 +1256,7 @@ $params = injectDomainObjectIfNecessary($params);
             $reqParams["rtype"] = "domain-r*";
             $reqParams["objid"] = $idn_domain;
             $reqParams["showall"] = 1;
+            $reqParams["pending"] = 1;
             $reqParams["limit"] = 1;
             $reqParams["period"] = 1;
 
@@ -1389,6 +1323,7 @@ function joker_Sync($params) {
         $reqParams["rtype"] = "domain-r*";
         $reqParams["objid"] = $idn_domain;
         $reqParams["showall"] = 1;
+        $reqParams["pending"] = 1;
         $reqParams["limit"] = 1;
         $reqParams["period"] = 1;
 
@@ -1425,6 +1360,7 @@ function joker_TransferSync($params){
     $reqParams["rtype"] = "domain-transfer-in-reseller";
     $reqParams["objid"] = $idn_domain;
     $reqParams["showall"] = 1;
+    $reqParams["pending"] = 1;
     $reqParams["limit"] = 1;
 
     $Joker = DMAPIClient::getInstance($params);

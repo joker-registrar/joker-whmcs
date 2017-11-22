@@ -59,6 +59,7 @@ class JokerCron {
             $reqParams["rtype"] = "domain-register";
             $reqParams["objid"] = $idn_domain;
             $reqParams["showall"] = 1;
+            $reqParams["pending"] = 1;
             $reqParams["limit"] = 1;
             $reqParams["cltrid"] = 'domreg-'.$domain->id;
             $Joker->ExecuteAction('result-list', $reqParams);
@@ -95,7 +96,7 @@ class JokerCron {
                     }
                 }
             } else {
-               $this->output($idn_domain . ': Domain/Order not found');
+               $this->output($idn_domain . ': Domain/Order not found (cltrid:'.'domreg-'.$domain->id.')');
             }
         }
     }

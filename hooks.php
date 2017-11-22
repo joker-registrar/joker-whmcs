@@ -3,7 +3,7 @@
   ****************************************************************************
   *                                                                          *
   * The MIT License (MIT)                                                    *
-  * Copyright (c) 2016 Joker.com                                             *
+  * Copyright (c) 2017 Joker.com                                             *
   * Permission is hereby granted, free of charge, to any person obtaining a  *
   * copy of this software and associated documentation files                 *
   * (the "Software"), to deal in the Software without restriction, including *
@@ -39,7 +39,7 @@ function joker_widget_info($vars) {
     $client->ExecuteAction("query-profile",Array());
 
     $content = '<p>';
-    $content .= '<strong>Username:</strong> '.$config['Username'].'<br>';
+    $content .= '<strong>Username:</strong> '.$client->getUsername().'<br>';
     $content .= '<strong>Customer ID:</strong> '.$client->getValue('customer-id').'<br>';
     $content .= '<strong>Account-Balance:</strong> '.$client->getValue('balance').' USD ';
     $content .= '<a class="btn btn-info btn-xs" href="https://joker.com/goto/funding" target="_blank">Increase your account on Joker.com</a>';
@@ -104,9 +104,10 @@ function joker_validate_additional_domain_fields($params)
 
 add_hook('ShoppingCartValidateDomainsConfig', 1, 'joker_validate_additional_domain_fields');
 
-/*
+
 function joker_after_domain_registration($vars) {
-    if($vars["params"]["registrar"]=="joker" && !$vars["params"]["NoCron"] && $vars["params"]["status"] == "Active"){
+    $config = getRegistrarConfigOptions('joker');
+    if($vars["params"]["registrar"]=="joker" && $config["CronJob"] && $vars["params"]["status"] == "Active"){
         $values = array();
         $values['status'] = "Pending";
         $values['expirydate'] = '0000-00-00';
@@ -116,4 +117,3 @@ function joker_after_domain_registration($vars) {
 }
 
 add_hook("AfterRegistrarRegistration",1,"joker_after_domain_registration");
-*/

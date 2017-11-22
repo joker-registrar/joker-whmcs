@@ -1,8 +1,8 @@
 -------------------------------------------------
  Joker.com registrar module for WHMCS
 -------------------------------------------------
-Version 1.0.4
-Tested with WHMCS 7.2.3
+Version 1.1.0
+Tested with WHMCS 7.4.1
 
 
 Features:
@@ -21,6 +21,7 @@ Additionally, also these features are provided:
 * fetch auth id
 * sync of expiration date
 * order whois privacy protection with domain registration, transfer and renewal
+* domain availability check
 
 
 Installation:
@@ -46,6 +47,15 @@ within the domain details.
 A special command there is "Sync" - this will trigger a manual sync of a domain's
 status and expiration date with Joker.com, in case it was modified outside of
 WHMCS. This is usually also done automatically by the 'WHMCS domainsync cron'.
+
+Advanced settings:
+If you enable the "CronJob" option of this module, make sure that the 
+file 'modules/registrars/joker/cron.php' is executed regularly. We suggest to
+run it every 5 minutes. If the cron.php is not executed and the "CronJob" option
+is enabled, domain registrations will not complete in WHMCS!!!
+
+Example crontab entry:
+*/5 * * * * php -q /path/to/whmcs/modules/registrars/joker/cron.php
 
 
 Please send us your feedback: reseller-support@joker.com
