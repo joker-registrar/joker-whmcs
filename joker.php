@@ -1126,19 +1126,49 @@ function joker_IDProtectToggle($params)
 
     // id protection parameter
     $protectEnable = (bool) $params['protectenable'];
+    $buyPrivacy = false;
+    $currentPrivacyStatus = false;
     
     $reqParams = Array();
     $reqParams["pattern"] = $idn_domain;
-    $reqParams["pname"] = "privacy";
-    $reqParams["pvalue"] = $protectEnable?"pro":"off";
+    $reqParams["showprivacy"] = 1;
 
     $Joker = DMAPIClient::getInstance($params);
-    $Joker->ExecuteAction('domain-set-property', $reqParams);
-    
+    $Joker->ExecuteAction('query-domain-list', $reqParams);
+
     if ($Joker->hasError()) {
         $values['error'] = $Joker->getError();
+        return $values;
     }
 
+    $resultList = $Joker->getResponseList();
+    if (count($resultList) > 0) {
+        $buyPrivacy = ($resultList[0]['privacy-origin'] === 'off');
+        $currentPrivacyStatus = ($resultList[0]['privacy-status'] !== 'off');
+    } else {
+        $values['error'] = "Domain not found";
+        return $values;
+    }
+    
+    if ($buyPrivacy) {
+        $reqParams = Array();
+        $reqParams["domain"] = $idn_domain;
+        $reqParams["pname"] = "privacy";
+        $reqParams["privacy"] = "pro";
+        $Joker->ExecuteAction('domain-privacy-order', $reqParams);
+        if ($Joker->hasError()) {
+            $values['error'] = $Joker->getError();
+        }
+    } elseif ($currentPrivacyStatus!=$protectEnable) {
+        $reqParams = Array();
+        $reqParams["domain"] = $idn_domain;
+        $reqParams["pname"] = "privacy";
+        $reqParams["pvalue"] = $protectEnable?"pro":"off";
+        $Joker->ExecuteAction('domain-set-property', $reqParams);
+        if ($Joker->hasError()) {
+            $values['error'] = $Joker->getError();
+        }
+    }
     return $values;
 
 }
