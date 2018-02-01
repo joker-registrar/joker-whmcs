@@ -1437,7 +1437,7 @@ function joker_CleanupContactDetails($params) {
 
     if (isset($params["contactdetails"]["Registrant"]["Phone"])) {
         // import $countrycallingcodes from WHMCS includes
-        if (file_exists(ROOTDIR.'/includes/additionaldomainfields.php')) {
+        if (file_exists(ROOTDIR.'/includes/countriescallingcodes.php')) {
             require_once (ROOTDIR."/includes/countriescallingcodes.php");
 
             $country = $params["contactdetails"]["Registrant"]["Country"];
