@@ -3,7 +3,7 @@
   ****************************************************************************
   *                                                                          *
   * The MIT License (MIT)                                                    *
-  * Copyright (c) 2017 Joker.com                                             *
+  * Copyright (c) 2018 Joker.com                                             *
   * Permission is hereby granted, free of charge, to any person obtaining a  *
   * copy of this software and associated documentation files                 *
   * (the "Software"), to deal in the Software without restriction, including *
@@ -375,9 +375,11 @@ function joker_RegisterDomain($params) {
     $reqParams["period"] = $params["regperiod"]*12;
     $reqParams["status"] = "production";
     $reqParams["owner-c"] = $owner_result['handle'];
-    $reqParams["admin-c"] = $admin_result['handle'];
-    $reqParams["tech-c"] = $admin_result['handle'];
-    $reqParams["billing-c"] = $admin_result['handle'];
+    if (is_array($admin_result)) {
+        $reqParams["admin-c"] = $admin_result['handle'];
+        $reqParams["tech-c"] = $admin_result['handle'];
+        $reqParams["billing-c"] = $admin_result['handle'];
+    }
     $reqParams["cltrid"] = 'domreg-'.$params['domainid'];
 
 
@@ -464,6 +466,13 @@ function joker_RenewDomain($params) {
     //$reqParams["showstatus"] = 1;
 
     $Joker = DMAPIClient::getInstance($params);
+    
+    $Joker->ExecuteAction("query-profile",Array());
+    if ($Joker->getValue('balance')<=0) {
+        $values['error'] = 'Account balance is too low.';
+        return $values;
+    }
+    
     $Joker->ExecuteAction('query-domain-list', $reqParams);
 
     if ($Joker->hasError()) {

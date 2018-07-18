@@ -3,7 +3,7 @@
   ****************************************************************************
   *                                                                          *
   * The MIT License (MIT)                                                    *
-  * Copyright (c) 2017 Joker.com                                             *
+  * Copyright (c) 2018 Joker.com                                             *
   * Permission is hereby granted, free of charge, to any person obtaining a  *
   * copy of this software and associated documentation files                 *
   * (the "Software"), to deal in the Software without restriction, including *
@@ -38,12 +38,12 @@ function joker_widget_info($vars) {
 
     $client->ExecuteAction("query-profile",Array());
 
-    $content = '<p>';
+    $content = '<div class="widget-content-padded"><p>';
     $content .= '<strong>Username:</strong> '.$client->getUsername().'<br>';
     $content .= '<strong>Customer ID:</strong> '.$client->getValue('customer-id').'<br>';
     $content .= '<strong>Account-Balance:</strong> '.$client->getValue('balance').' USD ';
     $content .= '<a class="btn btn-info btn-xs" href="https://joker.com/goto/funding" target="_blank">Increase your account on Joker.com</a>';
-    $content .= '</p>';
+    $content .= '</p></div>';
 
     return array( 'title' => 'Joker.com Reseller Account', 'content' => $content );
 
