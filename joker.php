@@ -47,6 +47,7 @@ $configarray = array(
  "TestMode" => array( "Type" => "yesno", "Description" => "Tick this box to use the Joker OT&E system: <a href=\"http://www.ote.joker.com/\" target=\"_blank\">http://www.ote.joker.com/</a>"),
  "SyncNextDueDate" => array( "Type" => "yesno", "Description" => "Tick this box to also sync the next due date with the expiry date", ),
  "DefaultNameservers" => array( "Type" => "yesno", "Description" => "Tick this box to use the default Joker nameservers for new domain registrations", ),
+ "TryRestoreFromRGP" => array( "Type" => "yesno", "Description" => "Tick this box to try a restore from redemption grace period, if renewal is not possible. (Be aware of additional costs and configure the fees in WHMCS accordingly!)", "Default" => false ),
  "CronJob" => array( "Type" => "yesno", "Description" => "Tick this box to use this module with its own cron job (see Readme before activation!)", "Default" => false ),
 );
 
@@ -411,6 +412,13 @@ function joker_RegisterDomain($params) {
 
 function joker_TransferDomain($params) {
 
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction("query-profile",Array());
+    if ($Joker->getValue('balance')<=0) {
+        $values['error'] = 'Account balance is too low.';
+        return $values;
+    }
+
     $owner_result = joker_CreateOwnerContact($params);
 
     if (isset($owner_result['error']) && $owner_result['error']) {
@@ -430,7 +438,6 @@ function joker_TransferDomain($params) {
     $reqParams["billing-c"] = $owner_result['handle'];
     $reqParams["autorenew"] = '0';
 
-
     $nslist = array();
     for ($i=1;$i<=5;$i++) {
         if (isset($params["ns$i"]) && !empty($params["ns$i"])) {
@@ -445,7 +452,6 @@ function joker_TransferDomain($params) {
         $reqParams["privacy"] = "pro";
     }
 
-    $Joker = DMAPIClient::getInstance($params);
     $Joker->ExecuteAction("domain-transfer-in-reseller", $reqParams);
 
     $values["error"] = $Joker->getError();
@@ -499,11 +505,13 @@ function joker_RenewDomain($params) {
             $reqParams["privacy" ] = "keep";
         }
         $Joker->ExecuteAction("domain-renew", $reqParams);
-    } else {
+    } elseif ($params['TryRestoreFromRGP']) {
         // TODO: Add Privacy. What about additional domain years?
         $reqParams = Array();
         $reqParams["domain"] = $idn_domain;
         $Joker->ExecuteAction("domain-redeem", $reqParams);
+    } else {
+        $values['error'] = 'Domain could not be renewed. Redemption grace period?';
     }
 
     if ($Joker->hasError()) {
