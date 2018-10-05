@@ -27,7 +27,7 @@ $additionaldomainfields[".fi"][] = array(
     "Name" => "x-ficora-type",
     "DisplayName" => "Legal Type",
     "Type" => "dropdown",
-    "Options" => "privateperson|Private Person,company|Company,corporation|Corporation,institution|Institution,politicalparty|Political party,township|Township,government|Government,publiccommunity|Public community",
+    "Options" => "privateperson|Private Person,company|Company,association|Association,institution|Institution,politicalparty|Political party,municipality|Municipality,government|Government,publiccommunity|Public community",
     "Required" => true,
 );
 
