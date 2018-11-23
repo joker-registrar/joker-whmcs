@@ -34,6 +34,7 @@
 */
 
 require_once dirname(__FILE__).'/dmapiclient.php';
+require_once dirname(__FILE__).'/helper.php';
 
 use WHMCS\Domains\DomainLookup\ResultsList;
 use WHMCS\Domains\DomainLookup\SearchResult;
@@ -487,13 +488,14 @@ function joker_RenewDomain($params) {
     }
 
     $resultList = $Joker->getResponseList();
-
+    
     if (count($resultList) > 0) {
         //$status = explode(",",$resultList[0]['domain_status']);
         //$expirationdate = $resultList[0]['expiration_date'];
-        // TODO: Check if domain is in redemption
         $restore = false;
     } else {
+        // TODO: Check if domain is in redemption
+        // isset($params['isInRedemptionGracePeriod']) && $params['isInRedemptionGracePeriod']
         $restore = true;
     }
 
@@ -1270,6 +1272,7 @@ $params = injectDomainObjectIfNecessary($params);
     $values = array();
 
     $idn_domain = $params['original']['domainObj']->getDomain(true);
+    $tld = $params['original']['domainObj']->getTopLevel();
 
 
     $reqParams = Array();
@@ -1287,9 +1290,9 @@ $params = injectDomainObjectIfNecessary($params);
 
     if (count($resultList) > 0) {
         //$status = explode(",",$resultList[0]['domain_status']);
-        $values['expirydate'] = $resultList[0]['expiration_date'];
+        $values['expirydate'] = JokerHelper::fixExpirationDate($resultList[0]['expiration_date'], $tld);
         if ($params['SyncNextDueDate']) {
-            $values['nextduedate'] = $resultList[0]['expiration_date'];
+            $values['nextduedate'] = $values['expirydate'];
         }
         $expDate = new DateTime($values['expirydate'],new DateTimeZone('UTC'));
         $now = new DateTime(null,new DateTimeZone('UTC'));
@@ -1336,6 +1339,7 @@ function joker_Sync($params) {
     $values = array();
 
     $idn_domain = $params['domainObj']->getDomain(true);
+    $tld = $params['original']['domainObj']->getTopLevel();
 
     $reqParams = Array();
     $reqParams["pattern"] = $idn_domain;
@@ -1354,9 +1358,9 @@ function joker_Sync($params) {
 
     if (count($resultList) > 0) {
         //$status = explode(",",$resultList[0]['domain_status']);
-        $values['expirydate'] = $resultList[0]['expiration_date'];
+        $values['expirydate'] = JokerHelper::fixExpirationDate($resultList[0]['expiration_date'], $tld);
         if ($params['SyncNextDueDate']) {
-            $values['nextduedate'] = $resultList[0]['expiration_date'];
+            $values['nextduedate'] = $values['expirydate'];
         }
         $expDate = new DateTime($values['expirydate'],new DateTimeZone('UTC'));
         $now = new DateTime(null,new DateTimeZone('UTC'));
@@ -1401,6 +1405,7 @@ function joker_TransferSync($params){
     $values = array();
 
     $idn_domain = $params['domainObj']->getDomain(true);
+    $tld = $params['original']['domainObj']->getTopLevel();
 
     
     $reqParams = Array();
@@ -1425,6 +1430,15 @@ function joker_TransferSync($params){
                 break;
             case "ack":
                 $values['completed'] = true;
+                $reqParams = Array();
+                $reqParams["pattern"] = $idn_domain;
+                $Joker->ExecuteAction('query-domain-list', $reqParams);
+                if (!$Joker->hasError()) {
+                    $resultList = $Joker->getResponseList();
+                    if (count($resultList) > 0) {
+                        $values['expirydate'] = JokerHelper::fixExpirationDate($resultList[0]['expiration_date'], $tld);
+                    }
+                }
                 break;
             case "nack":
                 $values['failed'] = true;

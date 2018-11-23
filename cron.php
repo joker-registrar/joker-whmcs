@@ -28,6 +28,7 @@
 
 require dirname(__FILE__). '/../../../init.php';
 require_once dirname(__FILE__).'/dmapiclient.php';
+require_once dirname(__FILE__).'/helper.php';
 
 use WHMCS\Domain\Domain;
 use WHMCS\Database\Capsule;
@@ -54,6 +55,7 @@ class JokerCron {
         foreach (Domain::where('registrar','joker')->where('status','Pending')->get() as $domain) {
             $domainObj = new WHMCS\Domains\Domain($domain->domain);
             $idn_domain = $domainObj->getDomain(true);
+            $tld = $domainObj->getTopLevel();
             $Joker = DMAPIClient::getInstance($this->loadSettings());
             $reqParams = array();
             $reqParams["rtype"] = "domain-register";
@@ -87,7 +89,7 @@ class JokerCron {
                     $resultList = $Joker->getResponseList();
 
                     if (count($resultList) > 0) {
-                        $domain->expirydate = $resultList[0]['expiration_date'];
+                        $domain->expirydate = JokerHelper::fixExpirationDate($resultList[0]['expiration_date'], $tld);
                         $domain->status = "Active";
                         $domain->save();
                         $this->output($idn_domain . ': ' . "Now active ({$domain->expirydate})");
@@ -102,7 +104,7 @@ class JokerCron {
     }
     
     private function output($line) {
-        print $line . PHP_EOL;
+        print date('Y-M-d H:i:s').':'.$line . PHP_EOL;
     }
 
     private function loadSettings() {
