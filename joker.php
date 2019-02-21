@@ -3,7 +3,7 @@
   ****************************************************************************
   *                                                                          *
   * The MIT License (MIT)                                                    *
-  * Copyright (c) 2018 Joker.com                                             *
+  * Copyright (c) 2019 Joker.com                                             *
   * Permission is hereby granted, free of charge, to any person obtaining a  *
   * copy of this software and associated documentation files                 *
   * (the "Software"), to deal in the Software without restriction, including *
@@ -35,6 +35,7 @@
 
 require_once dirname(__FILE__).'/dmapiclient.php';
 require_once dirname(__FILE__).'/helper.php';
+require_once dirname(__FILE__).'/translations.php';
 
 use WHMCS\Domains\DomainLookup\ResultsList;
 use WHMCS\Domains\DomainLookup\SearchResult;
@@ -1137,6 +1138,111 @@ function joker_DeleteNameserver($params) {
 
 }
 
+function joker_ManageDNSSEC($params,$fields) {
+    $successful = false;
+    $error = false;
+    $configured = false;
+    $record_added = false;
+    $records = array();
+
+    $params = injectDomainObjectIfNecessary($params);
+    $idn_domain = $params['original']['domainObj']->getDomain(true);
+
+    if ($_SERVER['REQUEST_METHOD'] === 'GET' || isset($_POST['refresh'])) {
+        // Load DNSSEC data currently not possible
+        $Joker = DMAPIClient::getInstance($params);
+        $Joker->ExecuteAction('whois', array('domain'=>$idn_domain,'disclaimer'=>0),'get');
+        if (!$Joker->hasError()) {
+            $configured = ($Joker->getValue("DNSSEC") == "signedDelegation");
+        } else {
+            print $Joker->getError();
+        }
+    } elseif (isset($_POST['removeRecord'])) {
+        $records = $_POST['records'];
+        unset($records[$_POST['removeRecord']]);
+    } elseif (isset($_POST['addRecord'])) {
+        $records = $_POST['records'];
+        if (count($records)>=6) {
+            $error = 'You cannot add more than 6 records';
+        } else {
+            $newRecord = array();
+            foreach($fields as $field) {
+                $newRecord[$field] = isset($_POST[$field])?$_POST[$field]:'';
+            }
+            $records[] = $newRecord;
+            $record_added = true;
+        }
+    } elseif (isset($_POST['save'])||isset($_POST['deactivate'])) {
+        $records = isset($_POST['records'])?$_POST['records']:array();
+        $reqParams = Array();
+        $reqParams["domain"] = $idn_domain;
+        $reqParams["dnssec"] = 0;
+        if (!empty($records) && is_array($records)) {
+            $reqParams["dnssec"] = 1;
+            $set = 0;
+            foreach($records as $record) {
+                if (++$set > 6) { break; }
+                if (isset($record['pubkey'])) {
+                    $record['pubkey'] = str_replace(array(" ","\n","\r","\t"),"",$record['pubkey']);
+                }
+                if (isset($record['digest'])) {
+                    $record['digest'] = str_replace(array(" ","\n","\r","\t"),"",$record['digest']);
+                }
+                $reqParams["ds-$set"] = implode(':',array_replace(array_flip($fields), $record));
+            }
+        }
+        $Joker = DMAPIClient::getInstance($params);
+        $Joker->ExecuteAction('domain-modify', $reqParams);
+    
+        if ($Joker->hasError()) {
+            $error = $Joker->getError();
+        } else {
+            $successful = true;
+        }
+    }
+
+    $values = array(
+        'successful' => $successful,
+        'configured' => $configured,
+        'recordslist' => $records,
+        'record_added' => $record_added
+    );
+    if ($error) {
+        $values['error'] = $error;
+    }
+    
+    return $values;
+}
+
+function joker_ManageDNSSEC_DS($params) {
+    $vars = joker_ManageDNSSEC(
+            $params,
+            array("keyTag","alg","digestType","digest")
+    );
+    $values = array(
+        'templatefile' => "dnssec_ds",
+        'vars' => $vars,
+        'breadcrumb' => array( 'clientarea.php?action=domaindetails&domainid='.$params['domainid'].'&modop=custom&a=ManageDNSSEC_DS' => Lang::Trans('Manage DNSSEC DS Records') )
+    );
+    return $values;
+}
+
+function joker_ManageDNSSEC_KD($params) {
+    
+    $vars = joker_ManageDNSSEC(
+        $params,
+        array("protocol","alg","flags","pubkey")
+    );
+
+    $values = array(
+        'templatefile' => 'dnssec_kd',
+        'vars' => $vars,
+        'breadcrumb' => array( 'clientarea.php?action=domaindetails&domainid='.$params['domainid'].'&modop=custom&a=ManageDNSSEC_KD' => Lang::Trans('Manage DNSSEC KD Records') )
+    );
+
+    return $values;
+}
+
 function joker_IDProtectToggle($params)
 {
     $values = array();
@@ -1499,9 +1605,24 @@ function joker_CleanupContactDetails($params) {
 }
 
 function joker_ClientAreaCustomButtonArray($params) {
+    
+    $params = injectDomainObjectIfNecessary($params);
+    $tld = $params['original']['domainObj']->getTopLevel();
 
     $buttonarray = array();
     $buttonarray["EPP Code"] = "FetchEPPCodeClient";
+
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction('inquire-tld', array('tld' => $tld), 'get');
+    
+    if (!$Joker->hasError()) {
+        $dnssec = $Joker->getValue('dnssec');
+        if (strpos($dnssec,'keydata')!==false) {
+            $buttonarray[Lang::Trans('Manage DNSSEC KD Records')] = "ManageDNSSEC_KD";
+        } elseif (strpos($dnssec,'dsdata')!==false) {
+            $buttonarray[Lang::Trans('Manage DNSSEC DS Records')] = "ManageDNSSEC_DS";
+        }
+    }
     return $buttonarray;
 }
 

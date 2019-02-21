@@ -1,8 +1,8 @@
 -------------------------------------------------
  Joker.com registrar module for WHMCS
 -------------------------------------------------
-Version 1.1.5
-Tested with WHMCS 7.6.1
+Version 1.2.0
+Tested with WHMCS 7.7.1
 
 
 Features:
@@ -22,6 +22,7 @@ Additionally, also these features are provided:
 * sync of expiration date
 * order whois privacy protection with domain registration, transfer and renewal
 * domain availability check
+* dnssec configuration
 
 
 Installation:

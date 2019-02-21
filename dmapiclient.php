@@ -3,7 +3,7 @@
   ****************************************************************************
   *                                                                          *
   * The MIT License (MIT)                                                    *
-  * Copyright (c) 2018 Joker.com                                             *
+  * Copyright (c) 2019 Joker.com                                             *
   * Permission is hereby granted, free of charge, to any person obtaining a  *
   * copy of this software and associated documentation files                 *
   * (the "Software"), to deal in the Software without restriction, including *
@@ -174,14 +174,14 @@ class DMAPIClient {
         return $result;
     }
 
-    public function ExecuteAction($command,$params) {
+    public function ExecuteAction($command,$params,$method='post') {
         if ($this->Session === false) {
             $loginResult = $this->Login();
             if ($this->Session === false) {
                 return $loginResult;
             }
         }
-        return $this->SendCommand($command, $params);
+        return $this->SendCommand($command, $params, $method);
     }
 
     private function Login() {
@@ -203,7 +203,7 @@ class DMAPIClient {
     }
 
 
-    private function SendCommand($command,$params) {
+    private function SendCommand($command,$params,$method='post') {
         $this->Reset();
         $this->Command = $command;
         $this->Values = Array();
@@ -219,21 +219,27 @@ class DMAPIClient {
             $params['auth-sid'] = $this->Session;
         }
 
-        $postString = "";
+        $queryString = "";
         foreach($params as $name => $value) {
-            $postString .= $name . "=" . urlencode( $value ) . "&";
+            $queryString .= $name . "=" . urlencode( $value ) . "&";
         }
-        if (!empty($postString)) {
-            $postString = substr($postString,0,-1);
+        if (!empty($queryString)) {
+            $queryString = substr($queryString,0,-1);
         }
 
         $ch = curl_init();
         $url = "https://".$host."/request/".$command;
-        if (substr($command,0,3) === "v2/") {
+        if (substr($command,0,3) === "v2/" || $command === "whois") {
             $url = "https://".$host."/".$command;
         }
+
+        if (strtolower($method)=='post') {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $queryString);
+        } elseif (!empty($queryString)) {
+            $url .= "?$queryString";
+        }
+
         curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postString);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
@@ -253,10 +259,10 @@ class DMAPIClient {
             logModuleCall(
                 'joker',
                 $command,
-                $postString,
+                $queryString,
                 ($this->hasError()?$this->getError():$response),
                 '',
-                array($this->Username, $this->Password)
+                array($this->Username, $this->Password, $this->ApiKey)
             );
         }
         return $response;

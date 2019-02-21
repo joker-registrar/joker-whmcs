@@ -1,5 +1,4 @@
 <?php
-
 /*
   ****************************************************************************
   *                                                                          *
@@ -27,13 +26,16 @@
   ****************************************************************************
 */
 
-class JokerHelper {
-
-    public static function fixExpirationDate($strDate,$tld) {
-        if (strtolower($tld) == 'eu') {
-            $strDate = (new DateTime($strDate,new DateTimeZone('UTC')))->modify('-1 days')->format('Y-m-d');
-        }
-        return $strDate;
+function loadLocale() {
+    global $_LANG;
+    $locale = isset($_LANG['locale'])?substr($_LANG['locale'], 0, 2):'en';
+    $locale_dir = dirname(__FILE__).'/locale/';
+    $locale_file = $locale_dir.$locale.'.php';
+    if (!file_exists($locale_file)) {
+        $locale_file = $locale_dir.'/en.php';
     }
-
+    $REGLANG = array();
+    include_once($locale_file);
+    $_LANG = $_LANG + $REGLANG;
 }
+loadLocale();
