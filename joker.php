@@ -1215,6 +1215,7 @@ function joker_ManageDNSSEC($params,$fields) {
 }
 
 function joker_ManageDNSSEC_DS($params) {
+    global $_LANG;
     $vars = joker_ManageDNSSEC(
             $params,
             array("keyTag","alg","digestType","digest")
@@ -1222,12 +1223,13 @@ function joker_ManageDNSSEC_DS($params) {
     $values = array(
         'templatefile' => "dnssec_ds",
         'vars' => $vars,
-        'breadcrumb' => array( 'clientarea.php?action=domaindetails&domainid='.$params['domainid'].'&modop=custom&a=ManageDNSSEC_DS' => Lang::Trans('Manage DNSSEC DS Records') )
+        'breadcrumb' => array( 'clientarea.php?action=domaindetails&domainid='.$params['domainid'].'&modop=custom&a=ManageDNSSEC_DS' => $_LANG['dnssec']['ds_page_title'] )
     );
     return $values;
 }
 
 function joker_ManageDNSSEC_KD($params) {
+    global $_LANG;
     
     $vars = joker_ManageDNSSEC(
         $params,
@@ -1237,7 +1239,7 @@ function joker_ManageDNSSEC_KD($params) {
     $values = array(
         'templatefile' => 'dnssec_kd',
         'vars' => $vars,
-        'breadcrumb' => array( 'clientarea.php?action=domaindetails&domainid='.$params['domainid'].'&modop=custom&a=ManageDNSSEC_KD' => Lang::Trans('Manage DNSSEC KD Records') )
+        'breadcrumb' => array( 'clientarea.php?action=domaindetails&domainid='.$params['domainid'].'&modop=custom&a=ManageDNSSEC_KD' => $_LANG['dnssec']['kd_page_title'] )
     );
 
     return $values;
@@ -1606,6 +1608,8 @@ function joker_CleanupContactDetails($params) {
 
 function joker_ClientAreaCustomButtonArray($params) {
     
+    global $_LANG;
+    
     $params = injectDomainObjectIfNecessary($params);
     $tld = $params['original']['domainObj']->getTopLevel();
 
@@ -1618,9 +1622,9 @@ function joker_ClientAreaCustomButtonArray($params) {
     if (!$Joker->hasError()) {
         $dnssec = $Joker->getValue('dnssec');
         if (strpos($dnssec,'keydata')!==false) {
-            $buttonarray[Lang::Trans('Manage DNSSEC KD Records')] = "ManageDNSSEC_KD";
+            $buttonarray[$_LANG['dnssec']['kd_page_title']] = "ManageDNSSEC_KD";
         } elseif (strpos($dnssec,'dsdata')!==false) {
-            $buttonarray[Lang::Trans('Manage DNSSEC DS Records')] = "ManageDNSSEC_DS";
+            $buttonarray[$_LANG['dnssec']['ds_page_title']] = "ManageDNSSEC_DS";
         }
     }
     return $buttonarray;
