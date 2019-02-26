@@ -33,7 +33,7 @@ $additionaldomainfields[".fi"][] = array(
 
 $additionaldomainfields[".fi"][] = array(
     "Name" => "x-ficora-registernumber",
-    "DisplayName" => "Identity Number, Date of Birth of Register Number",
+    "DisplayName" => "Identity Number, Date of Birth or Register Number",
     "Type" => "text",
     "Size" => "40",
     "Description" => "Depending on your <em>Legal Type</em> :<br> Please provide your <strong>birthdate</strong> if your are a private person and not finnish.<br> Please provide your <strong>identity number</strong> if your are a private person and finnish.<br> In all other cases, please provides your organizations <strong>registration number</strong>.",
