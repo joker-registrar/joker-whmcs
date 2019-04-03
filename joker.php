@@ -42,7 +42,8 @@ use WHMCS\Domains\DomainLookup\SearchResult;
 
 function joker_getConfigArray() {
 $configarray = array(
- "Description" => array("Type" => "System", "Value"=>"Don't have an Joker Account yet? Get one at: <a href=\"http://joker.com/\" target=\"_blank\">http://joker.com/</a>"),
+ "FriendlyName" => array("Type" => "System", "Value" => "Joker.com Registrar Module for WHMCS"),
+ "Description" => array("Type" => "System", "Value"=>"Don't have a Joker.com Account yet? Get one at: <a href=\"http://joker.com/\" target=\"_blank\">http://joker.com/</a>"),
  "ApiKey" => array( "Type" => "password", "Size" => "20", "Description" => "Enter your Joker API key here", ),
  "Username" => array( "Type" => "text", "Size" => "20", "Description" => "If you don't use API key, enter your Joker Reseller Account Username here", ),
  "Password" => array( "Type" => "password", "Size" => "20", "Description" => "If you don't use API key, enter your Joker Reseller Account Password here", ),
@@ -1373,6 +1374,11 @@ function joker_CheckAvailability($params)
     }
 
     return $results;
+}
+
+function joker_GetDomainSuggestions($params)
+{
+    return new ResultsList();
 }
 
 function joker_SyncManual($params) {
