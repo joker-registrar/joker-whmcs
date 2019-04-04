@@ -1345,7 +1345,6 @@ function joker_CheckAvailability($params)
             } else {
                 $status = SearchResult::STATUS_UNKNOWN;
             }
-            print 'error';
         } else {
             $status_row = $Joker->getValue('domain-status');
             $status_text = '';
