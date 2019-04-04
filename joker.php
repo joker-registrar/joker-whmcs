@@ -1336,25 +1336,30 @@ function joker_CheckAvailability($params)
         $Joker = DMAPIClient::getInstance($params);
         $domain = $searchTerm.$tld;
         $reqParams = Array("domain" => $domain);
-        $Joker->ExecuteAction('domaincheck', $reqParams);
+        $Joker->ExecuteAction('domain-check', $reqParams);
+        $searchResult = new SearchResult($searchTerm, $tld);
         if ($Joker->hasError()) {
             $error = $Joker->getError();
-            continue;
-        }
-        $searchResult = new SearchResult($searchTerm, $tld);
-        $status_row = $Joker->getValue('domain-status');
-        $status_arr = explode(':',$status_row,2);
-        $status_text = $status_arr[0];
-        $reason = count($status_arr)>1?trim($status_arr[1]):'';
-        switch($status_text) {
-            case 'free':
-            case 'available':
-                $status = SearchResult::STATUS_NOT_REGISTERED;
-                break;
-            default:
-            case 'unavailable':
-                $status=SearchResult::STATUS_REGISTERED;
-                break;
+            if (strpos($error,'Domain with extension supported by Joker.com')) {
+                $status = SearchResult::STATUS_TLD_NOT_SUPPORTED;
+            } else {
+                $status = SearchResult::STATUS_UNKNOWN;
+            }
+        } else {
+            $status_row = $Joker->getValue('domain-status');
+            $status_arr = explode(':',$status_row,2);
+            $status_text = $status_arr[0];
+            $reason = count($status_arr)>1?trim($status_arr[1]):'';
+            switch($status_text) {
+                case 'free':
+                case 'available':
+                    $status = SearchResult::STATUS_NOT_REGISTERED;
+                    break;
+                default:
+                case 'unavailable':
+                    $status=SearchResult::STATUS_REGISTERED;
+                    break;
+            }
         }
         $searchResult->setStatus($status);
         // Return premium information if applicable
