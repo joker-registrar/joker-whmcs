@@ -1345,11 +1345,14 @@ function joker_CheckAvailability($params)
             } else {
                 $status = SearchResult::STATUS_UNKNOWN;
             }
+            print 'error';
         } else {
             $status_row = $Joker->getValue('domain-status');
-            $status_arr = explode(':',$status_row,2);
-            $status_text = $status_arr[0];
-            $reason = count($status_arr)>1?trim($status_arr[1]):'';
+            $status_text = '';
+            $matches = array();
+            if (preg_match("/^(?P<status>[a-z]+)(?::(?P<reason>[^\[]+))?(?: *\[(?P<infos>[^\]]*)\])?/i", $status_row,$matches)) {
+                $status_text = $matches['status'];
+            }
             switch($status_text) {
                 case 'free':
                 case 'available':
