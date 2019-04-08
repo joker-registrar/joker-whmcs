@@ -635,7 +635,7 @@ function joker_CreateOwnerContact($params) {
         } elseif ($params["additionalfields"]['Legal Type']=="Non-UK Individual") {
             $uklegaltype="FIND";
         } elseif ($params["additionalfields"]['Legal Type']=="Foreign Organization") {
-            $uklegaltype="CORP";
+            $uklegaltype="FCORP";
         } elseif ($params["additionalfields"]['Legal Type']=="Other foreign organizations") {
             $uklegaltype="FOTHER";
         } else {
