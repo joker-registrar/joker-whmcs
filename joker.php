@@ -1332,12 +1332,15 @@ function joker_CheckAvailability($params)
     
     $results = new ResultsList();
 
-    foreach($tldsToInclude as $tld) {
+    foreach($tldsToInclude as $dotTld) {
+        $sld = $isIdnDomain?$punyCodeSearchTerm:$searchTerm;
+        $tld = substr($dotTld, 1);
+        $domain = $sld.'.'.$tld;
+
         $Joker = DMAPIClient::getInstance($params);
-        $domain = $searchTerm.$tld;
         $reqParams = Array("domain" => $domain);
         $Joker->ExecuteAction('domain-check', $reqParams);
-        $searchResult = new SearchResult($searchTerm, $tld);
+        $searchResult = new SearchResult($sld, $tld);
         if ($Joker->hasError()) {
             $error = $Joker->getError();
             if (strpos($error,'Domain with extension supported by Joker.com')) {
