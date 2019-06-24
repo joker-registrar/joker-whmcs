@@ -27,13 +27,27 @@
   ****************************************************************************
 */
 
+use WHMCS\Database\Capsule;
+
 class JokerHelper {
+    
+    private static $settings = Array();
 
     public static function fixExpirationDate($strDate,$tld) {
         if (strtolower($tld) == 'eu') {
             $strDate = (new DateTime($strDate,new DateTimeZone('UTC')))->modify('-1 days')->format('Y-m-d');
         }
         return $strDate;
+    }
+    
+    public static function loadSettings() {
+        if (empty(self::$settings)) {
+            foreach (Capsule::table('tblregistrars')->where('registrar','joker')->get() as $domain) {
+                $settings[$domain->setting] = decrypt($domain->value);
+            }
+            self::$settings = $settings;
+        }
+        return self::$settings;
     }
 
 }

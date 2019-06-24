@@ -31,13 +31,10 @@ require_once dirname(__FILE__).'/dmapiclient.php';
 require_once dirname(__FILE__).'/helper.php';
 
 use WHMCS\Domain\Domain;
-use WHMCS\Database\Capsule;
 
 class JokerCron {
     
     private static $_instance = null;
-    
-    private $settings = Array();
     
     public static function Execute() {
         $cron = self::getInstance();
@@ -56,7 +53,7 @@ class JokerCron {
             $domainObj = new WHMCS\Domains\Domain($domain->domain);
             $idn_domain = $domainObj->getDomain(true);
             $tld = $domainObj->getTopLevel();
-            $Joker = DMAPIClient::getInstance($this->loadSettings());
+            $Joker = DMAPIClient::getInstance(JokerHelper::loadSettings());
             $reqParams = array();
             $reqParams["rtype"] = "domain-register";
             $reqParams["objid"] = $idn_domain;
@@ -105,15 +102,6 @@ class JokerCron {
     
     private function output($line) {
         print date('Y-M-d H:i:s').':'.$line . PHP_EOL;
-    }
-
-    private function loadSettings() {
-        if (empty($this->settings)) {
-            foreach (Capsule::table('tblregistrars')->where('registrar','joker')->get() as $domain) {
-                $settings[$domain->setting] = decrypt($domain->value);
-            }
-        }
-        return $settings;
     }
 
 }

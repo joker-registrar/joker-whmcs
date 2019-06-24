@@ -1463,7 +1463,7 @@ function joker_Sync($params) {
     $values = array();
 
     $idn_domain = $params['domainObj']->getDomain(true);
-    $tld = $params['original']['domainObj']->getTopLevel();
+    $tld = $params['domainObj']->getTopLevel();
 
     $reqParams = Array();
     $reqParams["pattern"] = $idn_domain;
@@ -1529,9 +1529,8 @@ function joker_TransferSync($params){
     $values = array();
 
     $idn_domain = $params['domainObj']->getDomain(true);
-    $tld = $params['original']['domainObj']->getTopLevel();
+    $tld = $params['domainObj']->getTopLevel();
 
-    
     $reqParams = Array();
     $reqParams["rtype"] = "domain-transfer-in-reseller";
     $reqParams["objid"] = $idn_domain;
