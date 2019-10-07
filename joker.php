@@ -1,61 +1,61 @@
 <?php
-/*
-  ****************************************************************************
-  *                                                                          *
-  * The MIT License (MIT)                                                    *
-  * Copyright (c) 2019 Joker.com                                             *
-  * Permission is hereby granted, free of charge, to any person obtaining a  *
-  * copy of this software and associated documentation files                 *
-  * (the "Software"), to deal in the Software without restriction, including *
-  * without limitation the rights to use, copy, modify, merge, publish,      *
-  * distribute, sublicense, and/or sell copies of the Software, and to       *
-  * permit persons to whom the Software is furnished to do so, subject to    *
-  * the following conditions:                                                *
-  *                                                                          *
-  * The above copyright notice and this permission notice shall be included  *
-  * in all copies or substantial portions of the Software.                   *
-  *                                                                          *
-  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS  *
-  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF               *
-  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.   *
-  * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY     *
-  * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,     *
-  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE        *
-  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                   *
-  *                                                                          *
-  ****************************************************************************
-  *                                                                          *
-  * To install, create a folder named joker in modules/registrar             *
-  * of your whmcs installation root directory and copy                       *
-  * joker.php, jokerclient.php, eppcode.tpl, hooks.php logo.gif into it.     *
-  * Then in WHMCS admin menu, go to registrar module settings and select     *
-  * Joker, and configure.                                                    *
-  ****************************************************************************
-*/
 
-require_once dirname(__FILE__).'/dmapiclient.php';
-require_once dirname(__FILE__).'/helper.php';
-require_once dirname(__FILE__).'/translations.php';
+/*
+ ****************************************************************************
+ *                                                                          *
+ * The MIT License (MIT)                                                    *
+ * Copyright (c) 2019 Joker.com                                             *
+ * Permission is hereby granted, free of charge, to any person obtaining a  *
+ * copy of this software and associated documentation files                 *
+ * (the "Software"), to deal in the Software without restriction, including *
+ * without limitation the rights to use, copy, modify, merge, publish,      *
+ * distribute, sublicense, and/or sell copies of the Software, and to       *
+ * permit persons to whom the Software is furnished to do so, subject to    *
+ * the following conditions:                                                *
+ *                                                                          *
+ * The above copyright notice and this permission notice shall be included  *
+ * in all copies or substantial portions of the Software.                   *
+ *                                                                          *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS  *
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF               *
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.   *
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY     *
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,     *
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE        *
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                   *
+ *                                                                          *
+ ****************************************************************************
+ *                                                                          *
+ * To install, create a folder named joker in modules/registrar             *
+ * of your whmcs installation root directory and copy                       *
+ * joker.php, jokerclient.php, eppcode.tpl, hooks.php logo.gif into it.     *
+ * Then in WHMCS admin menu, go to registrar module settings and select     *
+ * Joker, and configure.                                                    *
+ ****************************************************************************
+ */
+
+require_once dirname(__FILE__) . '/dmapiclient.php';
+require_once dirname(__FILE__) . '/helper.php';
+require_once dirname(__FILE__) . '/translations.php';
 
 use WHMCS\Domains\DomainLookup\ResultsList;
 use WHMCS\Domains\DomainLookup\SearchResult;
 
 function joker_getConfigArray() {
-$configarray = array(
- "FriendlyName" => array("Type" => "System", "Value" => "Joker.com Registrar Module for WHMCS"),
- "Description" => array("Type" => "System", "Value"=>"Don't have a Joker.com Account yet? Get one at: <a href=\"http://joker.com/\" target=\"_blank\">http://joker.com/</a>"),
- "ApiKey" => array( "Type" => "password", "Size" => "20", "Description" => "Enter your Joker API key here", ),
- "Username" => array( "Type" => "text", "Size" => "20", "Description" => "If you don't use API key, enter your Joker Reseller Account Username here", ),
- "Password" => array( "Type" => "password", "Size" => "20", "Description" => "If you don't use API key, enter your Joker Reseller Account Password here", ),
- "TestMode" => array( "Type" => "yesno", "Description" => "Tick this box to use the Joker OT&E system: <a href=\"http://www.ote.joker.com/\" target=\"_blank\">http://www.ote.joker.com/</a>"),
- "SyncNextDueDate" => array( "Type" => "yesno", "Description" => "Tick this box to also sync the next due date with the expiry date", ),
- "DefaultNameservers" => array( "Type" => "yesno", "Description" => "Tick this box to use the default Joker nameservers for new domain registrations", ),
- "TryRestoreFromRGP" => array( "Type" => "yesno", "Description" => "Tick this box to try a restore from redemption grace period, if renewal is not possible. (Be aware of additional costs and configure the fees in WHMCS accordingly!)", "Default" => false ),
- "CronJob" => array( "Type" => "yesno", "Description" => "Tick this box to use this module with its own cron job (see Readme before activation!)", "Default" => false ),
-);
+    $configarray = array(
+        "FriendlyName" => array("Type" => "System", "Value" => "Joker.com Registrar Module for WHMCS"),
+        "Description" => array("Type" => "System", "Value" => "Don't have a Joker.com Account yet? Get one at: <a href=\"http://joker.com/\" target=\"_blank\">http://joker.com/</a>"),
+        "ApiKey" => array("Type" => "password", "Size" => "20", "Description" => "Enter your Joker API key here",),
+        "Username" => array("Type" => "text", "Size" => "20", "Description" => "If you don't use API key, enter your Joker Reseller Account Username here",),
+        "Password" => array("Type" => "password", "Size" => "20", "Description" => "If you don't use API key, enter your Joker Reseller Account Password here",),
+        "TestMode" => array("Type" => "yesno", "Description" => "Tick this box to use the Joker OT&E system: <a href=\"http://www.ote.joker.com/\" target=\"_blank\">http://www.ote.joker.com/</a>"),
+        "SyncNextDueDate" => array("Type" => "yesno", "Description" => "Tick this box to also sync the next due date with the expiry date",),
+        "DefaultNameservers" => array("Type" => "yesno", "Description" => "Tick this box to use the default Joker nameservers for new domain registrations",),
+        "TryRestoreFromRGP" => array("Type" => "yesno", "Description" => "Tick this box to try a restore from redemption grace period, if renewal is not possible. (Be aware of additional costs and configure the fees in WHMCS accordingly!)", "Default" => false),
+        "CronJob" => array("Type" => "yesno", "Description" => "Tick this box to use this module with its own cron job (see Readme before activation!)", "Default" => false),
+    );
 
-return $configarray;
-
+    return $configarray;
 }
 
 function joker_GetNameservers($params) {
@@ -73,7 +73,7 @@ function joker_GetNameservers($params) {
     $values = array();
     $nameservers = $Joker->getValue('domain.nservers.nserver.handle');
     for ($i = 1; $i <= 12; $i++) {
-        $values["ns".$i] = isset($nameservers[$i-1]) ? $nameservers[$i-1] : '';
+        $values["ns" . $i] = isset($nameservers[$i - 1]) ? $nameservers[$i - 1] : '';
     }
 
     if ($Joker->hasError()) {
@@ -81,7 +81,6 @@ function joker_GetNameservers($params) {
     }
 
     return $values;
-
 }
 
 function joker_SaveNameservers($params) {
@@ -91,15 +90,15 @@ function joker_SaveNameservers($params) {
     $idn_domain = $params['original']['domainObj']->getDomain(true);
 
     $nameserverList = array();
-    for ($i=1;$i<=5;$i++) {
-        if (isset($params["ns".$i]) && !empty($params["ns".$i])) {
-            $nameserverList[] = $params["ns".$i];
+    for ($i = 1; $i <= 5; $i++) {
+        if (isset($params["ns" . $i]) && !empty($params["ns" . $i])) {
+            $nameserverList[] = $params["ns" . $i];
         }
     }
 
     $reqParams = Array();
     $reqParams["domain"] = $idn_domain;
-    $reqParams["ns-list"] = implode(":", $nameserverList );
+    $reqParams["ns-list"] = implode(":", $nameserverList);
 
     $Joker = DMAPIClient::getInstance($params);
     $Joker->ExecuteAction('domain-modify', $reqParams);
@@ -110,7 +109,6 @@ function joker_SaveNameservers($params) {
     }
 
     return $values;
-
 }
 
 function joker_GetRegistrarLock($params) {
@@ -129,15 +127,14 @@ function joker_GetRegistrarLock($params) {
     $resultList = $Joker->getResponseList();
 
     if (count($resultList) > 0) {
-        $status = explode(",",$resultList[0]['domain_status']);
+        $status = explode(",", $resultList[0]['domain_status']);
         if (in_array('lock', $status)) {
-            $lockstatus="locked";
+            $lockstatus = "locked";
         } else {
-            $lockstatus="unlocked";
+            $lockstatus = "unlocked";
         }
         return $lockstatus;
     }
-
 }
 
 function joker_SaveRegistrarLock($params) {
@@ -146,7 +143,7 @@ function joker_SaveRegistrarLock($params) {
 
     $idn_domain = $params['original']['domainObj']->getDomain(true);
 
-    if ($params["lockenabled"]=="locked") {
+    if ($params["lockenabled"] == "locked") {
         $command = "domain-lock";
     } else {
         $command = "domain-unlock";
@@ -176,13 +173,13 @@ function joker_GetEmailForwarding($params) {
 
     $Joker = DMAPIClient::getInstance($params);
     $Joker->ExecuteAction("dns-zone-get", $reqParams);
-    
+
     $values = array();
 
     if (!$Joker->hasError()) {
         $dnsrecords = $Joker->getResponseList();
         $counter = 1;
-        foreach($dnsrecords as $record) {
+        foreach ($dnsrecords as $record) {
             if (count($record) > 1 && $record[1] == "MAILFW") {
                 $values[$counter++] = array(
                     "prefix" => $record[0],
@@ -219,8 +216,8 @@ function joker_SaveEmailForwarding($params) {
 
     $dnsrecords = array();
 
-    foreach($olddnsrecords as $key => $record) {
-        if ((count($record) > 2 && ($record[1] == "MAILFW" || ($record[1] == "NS" && $record[0] == "@") ))  ) {
+    foreach ($olddnsrecords as $key => $record) {
+        if ((count($record) > 2 && ($record[1] == "MAILFW" || ($record[1] == "NS" && $record[0] == "@") ))) {
             continue;
         }
         //Fix TTL in old records
@@ -246,7 +243,6 @@ function joker_SaveEmailForwarding($params) {
     }
 
     return $values;
-
 }
 
 function joker_GetDNS($params) {
@@ -265,16 +261,16 @@ function joker_GetDNS($params) {
 
     if (!$Joker->hasError()) {
         $dnsrecords = $Joker->getResponseList();
-        foreach($dnsrecords as $record) {
+        foreach ($dnsrecords as $record) {
             if (count($record) > 2 && ($record[1] !== "NS" || $record[0] !== "@")) {
                 if ($record[1] == "TXT") {
                     $hostRecords[] = array(
                         "hostname" => $record[0],
                         "type" => $record[1],
                         "priority" => $record[2],
-                        "address" => substr(implode(" ", array_slice($record,3,-1)),2,-2)
+                        "address" => substr(implode(" ", array_slice($record, 3, -1)), 2, -2)
                     );
-                } elseif ($record[1] !== "MAILFW" ) {
+                } elseif ($record[1] !== "MAILFW") {
                     $hostRecords[] = array(
                         "hostname" => $record[0],
                         "type" => $record[1],
@@ -287,7 +283,6 @@ function joker_GetDNS($params) {
     }
 
     return $hostRecords;
-
 }
 
 function joker_SaveDNS($params) {
@@ -312,15 +307,15 @@ function joker_SaveDNS($params) {
 
     $dnsrecords = array();
 
-    foreach($olddnsrecords as $key => $record) {
-        if ((count($record) > 2 && $record[1] == "MAILFW") || substr($record[0],0,7) == '$dyndns') {
+    foreach ($olddnsrecords as $key => $record) {
+        if ((count($record) > 2 && $record[1] == "MAILFW") || substr($record[0], 0, 7) == '$dyndns') {
             $dnsrecords[] = implode(" ", $record);
         }
     }
 
-    foreach ($params["dnsrecords"] AS $key=>$record) {
-        if ($record && $record["address"] && $record["type"]!='MXE') {
-            $dnsrecords[] = (empty($record["hostname"])?'@':$record["hostname"])." {$record["type"]} ".($record["type"]=="MX"?$record["priority"]:0)." ".($record["type"]=="TXT"?'"':'').$record["address"].($record["type"]=="TXT"?'"':'')." 86400 0 0";
+    foreach ($params["dnsrecords"] AS $key => $record) {
+        if ($record && $record["address"] && $record["type"] != 'MXE') {
+            $dnsrecords[] = (empty($record["hostname"]) ? '@' : $record["hostname"]) . " {$record["type"]} " . ($record["type"] == "MX" ? $record["priority"] : 0) . " " . ($record["type"] == "TXT" ? '"' : '') . $record["address"] . ($record["type"] == "TXT" ? '"' : '') . " 86400 0 0";
         }
     }
 
@@ -334,7 +329,6 @@ function joker_SaveDNS($params) {
     }
 
     return $values;
-
 }
 
 function joker_RegisterDomain($params) {
@@ -363,9 +357,9 @@ function joker_RegisterDomain($params) {
     if ($params['domainObj']->isIdn()) {
         $reqParams["language"] = "";
         if ($params['language'] == 'swedish') {
-            if (($params["tld"] == "co") || ($params["tld"] == "biz") || ($params["tld"] == "tel")){
+            if (($params["tld"] == "co") || ($params["tld"] == "biz") || ($params["tld"] == "tel")) {
                 $reqParams["language"] = "se";
-            } elseif (($params["tld"] == "com") || ($params["tld"] == "net") || ($params["tld"] == "li") || ($params["tld"] == "fr") || ($params["tld"] == "ch") || ($params["tld"] == "sg") || ($params["tld"] == "com.sg") || ($params["tld"] == "tv") || ($params["tld"] == "co.uk")){
+            } elseif (($params["tld"] == "com") || ($params["tld"] == "net") || ($params["tld"] == "li") || ($params["tld"] == "fr") || ($params["tld"] == "ch") || ($params["tld"] == "sg") || ($params["tld"] == "com.sg") || ($params["tld"] == "tv") || ($params["tld"] == "co.uk")) {
                 $reqParams["language"] = "swe";
             } else {
                 $reqParams["language"] = "sv";
@@ -375,8 +369,15 @@ function joker_RegisterDomain($params) {
     //# END IDN FIX
     //#################################################################################################################
 
+    $premiumDomainsEnabled = (bool) $params['premiumEnabled'];
+    $premiumDomainsCost = $params['premiumCost'];
+
+    if ($premiumDomainsEnabled && $premiumDomainsCost) {
+        $reqParams["max-price"] = ceil($premiumDomainsCost);
+    }
+
     $reqParams["domain"] = $idn_domain;
-    $reqParams["period"] = $params["regperiod"]*12;
+    $reqParams["period"] = $params["regperiod"] * 12;
     $reqParams["status"] = "production";
     $reqParams["owner-c"] = $owner_result['handle'];
     if (is_array($admin_result)) {
@@ -384,14 +385,14 @@ function joker_RegisterDomain($params) {
         $reqParams["tech-c"] = $admin_result['handle'];
         $reqParams["billing-c"] = $admin_result['handle'];
     }
-    $reqParams["cltrid"] = 'domreg-'.$params['domainid'];
+    $reqParams["cltrid"] = 'domreg-' . $params['domainid'];
 
 
     if ($params["DefaultNameservers"]) {
         $reqParams["ns-list"] = "a.ns.joker.com:b.ns.joker.com:c.ns.joker.com";
     } else {
         $nslist = array();
-        for ($i=1;$i<=5;$i++) {
+        for ($i = 1; $i <= 5; $i++) {
             if (isset($params["ns$i"]) && !empty($params["ns$i"])) {
                 $nslist[] = $params["ns$i"];
             }
@@ -410,14 +411,13 @@ function joker_RegisterDomain($params) {
         $values["error"] = $Joker->getError();
     }
     return $values;
-
 }
 
 function joker_TransferDomain($params) {
 
     $Joker = DMAPIClient::getInstance($params);
-    $Joker->ExecuteAction("query-profile",Array());
-    if ($Joker->getValue('balance')<=0) {
+    $Joker->ExecuteAction("query-profile", Array());
+    if ($Joker->getValue('balance') <= 0) {
         $values['error'] = 'Account balance is too low.';
         return $values;
     }
@@ -442,12 +442,12 @@ function joker_TransferDomain($params) {
     $reqParams["autorenew"] = '0';
 
     $nslist = array();
-    for ($i=1;$i<=5;$i++) {
+    for ($i = 1; $i <= 5; $i++) {
         if (isset($params["ns$i"]) && !empty($params["ns$i"])) {
             $nslist[] = $params["ns$i"];
         }
     }
-    if (count($nslist)>0) {
+    if (count($nslist) > 0) {
         $reqParams["ns-list"] = implode(':', $nslist);
     }
 
@@ -460,7 +460,6 @@ function joker_TransferDomain($params) {
     $values["error"] = $Joker->getError();
 
     return $values;
-
 }
 
 function joker_RenewDomain($params) {
@@ -475,13 +474,13 @@ function joker_RenewDomain($params) {
     //$reqParams["showstatus"] = 1;
 
     $Joker = DMAPIClient::getInstance($params);
-    
-    $Joker->ExecuteAction("query-profile",Array());
-    if ($Joker->getValue('balance')<=0) {
+
+    $Joker->ExecuteAction("query-profile", Array());
+    if ($Joker->getValue('balance') <= 0) {
         $values['error'] = 'Account balance is too low.';
         return $values;
     }
-    
+
     $Joker->ExecuteAction('query-domain-list', $reqParams);
 
     if ($Joker->hasError()) {
@@ -490,7 +489,7 @@ function joker_RenewDomain($params) {
     }
 
     $resultList = $Joker->getResponseList();
-    
+
     if (count($resultList) > 0) {
         //$status = explode(",",$resultList[0]['domain_status']);
         //$expirationdate = $resultList[0]['expiration_date'];
@@ -504,9 +503,14 @@ function joker_RenewDomain($params) {
     if (!$restore) {
         $reqParams = Array();
         $reqParams["domain"] = $idn_domain;
-        $reqParams["period"] = $params["regperiod"]*12;
+        $reqParams["period"] = $params["regperiod"] * 12;
         if ($params["idprotection"]) {
-            $reqParams["privacy" ] = "keep";
+            $reqParams["privacy"] = "keep";
+        }
+        $premiumDomainsEnabled = (bool) $params['premiumEnabled'];
+        $premiumDomainsCost = $params['premiumCost'];
+        if ($premiumDomainsEnabled && $premiumDomainsCost) {
+            $reqParams["max-price"] = ceil($premiumDomainsCost);
         }
         $Joker->ExecuteAction("domain-renew", $reqParams);
     } elseif ($params['TryRestoreFromRGP']) {
@@ -523,7 +527,6 @@ function joker_RenewDomain($params) {
     }
 
     return $values;
-
 }
 
 function joker_CreateOwnerContact($params) {
@@ -544,7 +547,7 @@ function joker_CreateOwnerContact($params) {
     $reqParams["email"] = $params["email"];
     $reqParams["address-1"] = $params["address1"];
     $reqParams["address-2"] = $params["address2"];
-    $reqParams["name"] = $params["firstname"].' '.$params["lastname"];
+    $reqParams["name"] = $params["firstname"] . ' ' . $params["lastname"];
     $reqParams["organization"] = $params["companyname"];
 
     if ($params['domainObj']->getLastTLDSegment() == 'fi') {
@@ -560,7 +563,7 @@ function joker_CreateOwnerContact($params) {
                 $reqParams["x-ficora-identity"] = $params["additionalfields"]["x-ficora-registernumber"];
             } else {
                 $reqParams["x-ficora-birthdate"] = $params["additionalfields"]["x-ficora-registernumber"];
-                if (!preg_match("/^\d{4}-\d{2}-\d{2}$/",$reqParams["x-ficora-birthdate"]) ) {
+                if (!preg_match("/^\d{4}-\d{2}-\d{2}$/", $reqParams["x-ficora-birthdate"])) {
                     $date = date_parse($reqParams["x-ficora-birthdate"]);
                     if ($date['day'] !== false && $date['month'] !== false && $date['year'] !== false) {
                         $reqParams["x-ficora-birthdate"] = sprintf("%04d-%02d-%02d", $date['year'], $date['month'], $date['day']);
@@ -576,25 +579,25 @@ function joker_CreateOwnerContact($params) {
         $countrycode = $params["additionalfields"]['Nexus Country'];
         $purpose = $params["additionalfields"]['Application Purpose'];
 
-        if ($purpose=="Business use for profit") {
-            $purpose="P1";
-        } elseif ($purpose=="Non-profit business") {
-            $purpose="P2";
-        } elseif ($purpose=="Club") {
-            $purpose="P2";
-        } elseif ($purpose=="Association") {
-            $purpose="P2";
-        } elseif ($purpose=="Religious Organization") {
-            $purpose="P2";
-        } elseif ($purpose=="Personal Use") {
-            $purpose="P3";
-        } elseif ($purpose=="Educational purposes") {
-            $purpose="P4";
-        } elseif ($purpose=="Government purposes") {
-            $purpose="P5";
+        if ($purpose == "Business use for profit") {
+            $purpose = "P1";
+        } elseif ($purpose == "Non-profit business") {
+            $purpose = "P2";
+        } elseif ($purpose == "Club") {
+            $purpose = "P2";
+        } elseif ($purpose == "Association") {
+            $purpose = "P2";
+        } elseif ($purpose == "Religious Organization") {
+            $purpose = "P2";
+        } elseif ($purpose == "Personal Use") {
+            $purpose = "P3";
+        } elseif ($purpose == "Educational purposes") {
+            $purpose = "P4";
+        } elseif ($purpose == "Government purposes") {
+            $purpose = "P5";
         }
 
-        switch ($nexus){
+        switch ($nexus) {
             case 'C11':
             case 'C12':
             case 'C21':
@@ -607,43 +610,41 @@ function joker_CreateOwnerContact($params) {
                 break;
         }
         $reqParams["app-purpose"] = $purpose;
-
     } elseif ($params['domainObj']->getLastTLDSegment() == 'uk') {
 
-        if ($params["additionalfields"]['Legal Type']=="UK Limited Company") {
-            $uklegaltype="LTD";
-        } elseif ($params["additionalfields"]['Legal Type']=="UK Public Limited Company") {
-            $uklegaltype="PLC";
-        } elseif ($params["additionalfields"]['Legal Type']=="UK Partnership") {
-            $uklegaltype="PTNR";
-        } elseif ($params["additionalfields"]['Legal Type']=="UK Limited Liability Partnership") {
-            $uklegaltype="LLP";
-        } elseif ($params["additionalfields"]['Legal Type']=="Sole Trader") {
-            $uklegaltype="STRA";
-        } elseif ($params["additionalfields"]['Legal Type']=="UK Registered Charity") {
-            $uklegaltype="RCHAR";
-        } elseif ($params["additionalfields"]['Legal Type']=="UK Industrial/Provident Registered Company") {
-            $uklegaltype="IP";
-        } elseif ($params["additionalfields"]['Legal Type']=="UK School") {
-            $uklegaltype="SCH";
-        } elseif ($params["additionalfields"]['Legal Type']=="UK Government Body") {
-            $uklegaltype="GOV";
-        } elseif ($params["additionalfields"]['Legal Type']=="UK Corporation by Royal Charter") {
-            $uklegaltype="CRC";
-        } elseif ($params["additionalfields"]['Legal Type']=="UK Statutory Body") {
-            $uklegaltype="STAT";
-        } elseif ($params["additionalfields"]['Legal Type']=="Non-UK Individual") {
-            $uklegaltype="FIND";
-        } elseif ($params["additionalfields"]['Legal Type']=="Foreign Organization") {
-            $uklegaltype="FCORP";
-        } elseif ($params["additionalfields"]['Legal Type']=="Other foreign organizations") {
-            $uklegaltype="FOTHER";
+        if ($params["additionalfields"]['Legal Type'] == "UK Limited Company") {
+            $uklegaltype = "LTD";
+        } elseif ($params["additionalfields"]['Legal Type'] == "UK Public Limited Company") {
+            $uklegaltype = "PLC";
+        } elseif ($params["additionalfields"]['Legal Type'] == "UK Partnership") {
+            $uklegaltype = "PTNR";
+        } elseif ($params["additionalfields"]['Legal Type'] == "UK Limited Liability Partnership") {
+            $uklegaltype = "LLP";
+        } elseif ($params["additionalfields"]['Legal Type'] == "Sole Trader") {
+            $uklegaltype = "STRA";
+        } elseif ($params["additionalfields"]['Legal Type'] == "UK Registered Charity") {
+            $uklegaltype = "RCHAR";
+        } elseif ($params["additionalfields"]['Legal Type'] == "UK Industrial/Provident Registered Company") {
+            $uklegaltype = "IP";
+        } elseif ($params["additionalfields"]['Legal Type'] == "UK School") {
+            $uklegaltype = "SCH";
+        } elseif ($params["additionalfields"]['Legal Type'] == "UK Government Body") {
+            $uklegaltype = "GOV";
+        } elseif ($params["additionalfields"]['Legal Type'] == "UK Corporation by Royal Charter") {
+            $uklegaltype = "CRC";
+        } elseif ($params["additionalfields"]['Legal Type'] == "UK Statutory Body") {
+            $uklegaltype = "STAT";
+        } elseif ($params["additionalfields"]['Legal Type'] == "Non-UK Individual") {
+            $uklegaltype = "FIND";
+        } elseif ($params["additionalfields"]['Legal Type'] == "Foreign Organization") {
+            $uklegaltype = "FCORP";
+        } elseif ($params["additionalfields"]['Legal Type'] == "Other foreign organizations") {
+            $uklegaltype = "FOTHER";
         } else {
-            $uklegaltype="IND";
+            $uklegaltype = "IND";
         }
         $reqParams["account-type"] = $uklegaltype;
         $reqParams["company-number"] = $params["additionalfields"]['Company ID Number'];
-
     } elseif ($params['domainObj']->getLastTLDSegment() == 'eu') {
         $reqParams["lang"] = "EN";
     }
@@ -652,14 +653,13 @@ function joker_CreateOwnerContact($params) {
     $Joker->ExecuteAction("v2/contact/create", $reqParams);
 
     if ($Joker->hasError()) {
-        $values["error"] = "Registrant: ".$Joker->getError();
+        $values["error"] = "Registrant: " . $Joker->getError();
         return $values;
     }
 
     $handle = $Joker->getValue('handle');
     $values['handle'] = $handle;
     return $values;
-
 }
 
 function joker_CreateAdminContact($params) {
@@ -679,7 +679,7 @@ function joker_CreateAdminContact($params) {
     $reqParams["email"] = $params["adminemail"];
     $reqParams["address-1"] = $params["adminaddress1"];
     $reqParams["address-2"] = $params["adminaddress2"];
-    $reqParams["name"] = $params["adminfirstname"].' '.$params["adminlastname"];
+    $reqParams["name"] = $params["adminfirstname"] . ' ' . $params["adminlastname"];
     $reqParams["organization"] = $params["admincompanyname"];
 
     if ($params['domainObj']->getLastTLDSegment() == 'eu') {
@@ -690,7 +690,7 @@ function joker_CreateAdminContact($params) {
     $Joker->ExecuteAction("v2/contact/create", $reqParams);
 
     if ($Joker->hasError()) {
-        $values["error"] = "Admin: ".$Joker->getError();
+        $values["error"] = "Admin: " . $Joker->getError();
         return $values;
     }
 
@@ -705,7 +705,7 @@ function joker_GetContactDetails($params) {
     $values = array();
 
     $idn_domain = $params['original']['domainObj']->getDomain(true);
-    
+
     $reqParams = Array();
     $reqParams["domain"] = $idn_domain;
     $reqParams["internal"] = 1;
@@ -737,46 +737,45 @@ function joker_GetContactDetails($params) {
 
     // Don't allow to change admin, tech and billing contact for now
     /*
-    $contacts = array(
-        "Admin" => $Joker->getValue("domain.admin-c"),
-        "Tech" => $Joker->getValue("domain.tech-c"),
-        "Billing" => $Joker->getValue("domain.billing-c")
-    );
+      $contacts = array(
+      "Admin" => $Joker->getValue("domain.admin-c"),
+      "Tech" => $Joker->getValue("domain.tech-c"),
+      "Billing" => $Joker->getValue("domain.billing-c")
+      );
 
-    foreach($contacts as $type => $handle) {
-        $reqParams = Array();
-        $reqParams["contact"] = $handle;
-        $Joker->ExecuteAction('query-whois', $reqParams);
+      foreach($contacts as $type => $handle) {
+      $reqParams = Array();
+      $reqParams["contact"] = $handle;
+      $Joker->ExecuteAction('query-whois', $reqParams);
 
-        if ($Joker->hasError()) {
-            //$values["error"] = $Joker->getError();
-            continue;
-        }
+      if ($Joker->hasError()) {
+      //$values["error"] = $Joker->getError();
+      continue;
+      }
 
-        $names = explode(" ", $Joker->getValue("contact.name"));
-        $lastname = array_pop($names);
-        $firstname = implode(" ", $names);
-        $values[$type]["First Name"] = $firstname;
-        $values[$type]["Last Name"] = $lastname;
-        $values[$type]["Organisation Name"] = $Joker->getValue("contact.organization");
-        $values[$type]["Job Title"] = "";
-        $values[$type]["Email"] = $Joker->getValue("contact.email");
-        $values[$type]["Address 1"] = $Joker->getValue("contact.address-1");
-        $values[$type]["Address 2"] = $Joker->getValue("contact.address-2");
-        $values[$type]["City"] = $Joker->getValue("contact.city");
-        $values[$type]["State"] = $Joker->getValue("contact.state");
-        $values[$type]["Postcode"] = $Joker->getValue("contact.postal-code");
-        $values[$type]["Country"] = $Joker->getValue("contact.country");
-        $values[$type]["Phone"] = $Joker->getValue("contact.phone");
-        $values[$type]["Fax"] = $Joker->getValue("contact.fax");
-    }
-    */
+      $names = explode(" ", $Joker->getValue("contact.name"));
+      $lastname = array_pop($names);
+      $firstname = implode(" ", $names);
+      $values[$type]["First Name"] = $firstname;
+      $values[$type]["Last Name"] = $lastname;
+      $values[$type]["Organisation Name"] = $Joker->getValue("contact.organization");
+      $values[$type]["Job Title"] = "";
+      $values[$type]["Email"] = $Joker->getValue("contact.email");
+      $values[$type]["Address 1"] = $Joker->getValue("contact.address-1");
+      $values[$type]["Address 2"] = $Joker->getValue("contact.address-2");
+      $values[$type]["City"] = $Joker->getValue("contact.city");
+      $values[$type]["State"] = $Joker->getValue("contact.state");
+      $values[$type]["Postcode"] = $Joker->getValue("contact.postal-code");
+      $values[$type]["Country"] = $Joker->getValue("contact.country");
+      $values[$type]["Phone"] = $Joker->getValue("contact.phone");
+      $values[$type]["Fax"] = $Joker->getValue("contact.fax");
+      }
+     */
 
     return $values;
 }
 
-function joker_GetRegistrantContactEmailAddress(array $params)
-{
+function joker_GetRegistrantContactEmailAddress(array $params) {
     $params = injectDomainObjectIfNecessary($params);
     $values = array();
 
@@ -796,15 +795,14 @@ function joker_GetRegistrantContactEmailAddress(array $params)
 
     $values['registrantEmail'] = $Joker->getValue('domain.email');
     return $values;
-
 }
 
 function joker_SaveContactDetails($params) {
     $params = injectDomainObjectIfNecessary($params);
     $params = joker_CleanupContactDetails($params);
-    
+
     $errorMsgs = array();
-    
+
     $idn_domain = $params['original']['domainObj']->getDomain(true);
 
     $reqParams = Array();
@@ -819,7 +817,7 @@ function joker_SaveContactDetails($params) {
     $reqParams["address-1"] = $params["contactdetails"]["Registrant"]["Address 1"];
     $reqParams["address-2"] = $params["contactdetails"]["Registrant"]["Address 2"];
     //$reqParams["title"] = $params["contactdetails"]["Registrant"]["Job Title"];
-    $reqParams["name"] = $params["contactdetails"]["Registrant"]["First Name"].' '.$params["contactdetails"]["Registrant"]["Last Name"];
+    $reqParams["name"] = $params["contactdetails"]["Registrant"]["First Name"] . ' ' . $params["contactdetails"]["Registrant"]["Last Name"];
     $reqParams["organization"] = $params["contactdetails"]["Registrant"]["Organisation Name"];
 
     if ($params['original']['domainObj']->getLastTLDSegment() == 'us') {
@@ -828,25 +826,25 @@ function joker_SaveContactDetails($params) {
         $countrycode = $params["additionalfields"]['Nexus Country'];
         $purpose = $params["additionalfields"]['Application Purpose'];
 
-        if ($purpose=="Business use for profit") {
-            $purpose="P1";
-        } elseif ($purpose=="Non-profit business") {
-            $purpose="P2";
-        } elseif ($purpose=="Club") {
-            $purpose="P2";
-        } elseif ($purpose=="Association") {
-            $purpose="P2";
-        } elseif ($purpose=="Religious Organization") {
-            $purpose="P2";
-        } elseif ($purpose=="Personal Use") {
-            $purpose="P3";
-        } elseif ($purpose=="Educational purposes") {
-            $purpose="P4";
-        } elseif ($purpose=="Government purposes") {
-            $purpose="P5";
+        if ($purpose == "Business use for profit") {
+            $purpose = "P1";
+        } elseif ($purpose == "Non-profit business") {
+            $purpose = "P2";
+        } elseif ($purpose == "Club") {
+            $purpose = "P2";
+        } elseif ($purpose == "Association") {
+            $purpose = "P2";
+        } elseif ($purpose == "Religious Organization") {
+            $purpose = "P2";
+        } elseif ($purpose == "Personal Use") {
+            $purpose = "P3";
+        } elseif ($purpose == "Educational purposes") {
+            $purpose = "P4";
+        } elseif ($purpose == "Government purposes") {
+            $purpose = "P5";
         }
 
-        switch ($nexus){
+        switch ($nexus) {
             case 'C11':
             case 'C12':
             case 'C21':
@@ -859,43 +857,41 @@ function joker_SaveContactDetails($params) {
                 break;
         }
         $reqParams["app-purpose"] = $purpose;
-
     } elseif ($params['original']['domainObj']->getLastTLDSegment() == 'uk') {
 
-        if ($params["additionalfields"]['Legal Type']=="UK Limited Company") {
-            $uklegaltype="LTD";
-        } elseif ($params["additionalfields"]['Legal Type']=="UK Public Limited Company") {
-            $uklegaltype="PLC";
-        } elseif ($params["additionalfields"]['Legal Type']=="UK Partnership") {
-            $uklegaltype="PTNR";
-        } elseif ($params["additionalfields"]['Legal Type']=="UK Limited Liability Partnership") {
-            $uklegaltype="LLP";
-        } elseif ($params["additionalfields"]['Legal Type']=="Sole Trader") {
-            $uklegaltype="STRA";
-        } elseif ($params["additionalfields"]['Legal Type']=="UK Registered Charity") {
-            $uklegaltype="RCHAR";
-        } elseif ($params["additionalfields"]['Legal Type']=="UK Industrial/Provident Registered Company") {
-            $uklegaltype="IP";
-        } elseif ($params["additionalfields"]['Legal Type']=="UK School") {
-            $uklegaltype="SCH";
-        } elseif ($params["additionalfields"]['Legal Type']=="UK Government Body") {
-            $uklegaltype="GOV";
-        } elseif ($params["additionalfields"]['Legal Type']=="UK Corporation by Royal Charter") {
-            $uklegaltype="CRC";
-        } elseif ($params["additionalfields"]['Legal Type']=="UK Statutory Body") {
-            $uklegaltype="STAT";
-        } elseif ($params["additionalfields"]['Legal Type']=="Non-UK Individual") {
-            $uklegaltype="FIND";
-        } elseif ($params["additionalfields"]['Legal Type']=="Foreign Organization") {
-            $uklegaltype="CORP";
-        } elseif ($params["additionalfields"]['Legal Type']=="Other foreign organizations") {
-            $uklegaltype="FOTHER";
+        if ($params["additionalfields"]['Legal Type'] == "UK Limited Company") {
+            $uklegaltype = "LTD";
+        } elseif ($params["additionalfields"]['Legal Type'] == "UK Public Limited Company") {
+            $uklegaltype = "PLC";
+        } elseif ($params["additionalfields"]['Legal Type'] == "UK Partnership") {
+            $uklegaltype = "PTNR";
+        } elseif ($params["additionalfields"]['Legal Type'] == "UK Limited Liability Partnership") {
+            $uklegaltype = "LLP";
+        } elseif ($params["additionalfields"]['Legal Type'] == "Sole Trader") {
+            $uklegaltype = "STRA";
+        } elseif ($params["additionalfields"]['Legal Type'] == "UK Registered Charity") {
+            $uklegaltype = "RCHAR";
+        } elseif ($params["additionalfields"]['Legal Type'] == "UK Industrial/Provident Registered Company") {
+            $uklegaltype = "IP";
+        } elseif ($params["additionalfields"]['Legal Type'] == "UK School") {
+            $uklegaltype = "SCH";
+        } elseif ($params["additionalfields"]['Legal Type'] == "UK Government Body") {
+            $uklegaltype = "GOV";
+        } elseif ($params["additionalfields"]['Legal Type'] == "UK Corporation by Royal Charter") {
+            $uklegaltype = "CRC";
+        } elseif ($params["additionalfields"]['Legal Type'] == "UK Statutory Body") {
+            $uklegaltype = "STAT";
+        } elseif ($params["additionalfields"]['Legal Type'] == "Non-UK Individual") {
+            $uklegaltype = "FIND";
+        } elseif ($params["additionalfields"]['Legal Type'] == "Foreign Organization") {
+            $uklegaltype = "CORP";
+        } elseif ($params["additionalfields"]['Legal Type'] == "Other foreign organizations") {
+            $uklegaltype = "FOTHER";
         } else {
-            $uklegaltype="IND";
+            $uklegaltype = "IND";
         }
         $reqParams["account-type"] = $uklegaltype;
         $reqParams["company-number"] = $params["additionalfields"]['Company ID Number'];
-
     } elseif ($params['original']['domainObj']->getLastTLDSegment() == 'eu') {
         $reqParams["lang"] = "EN";
     }
@@ -904,7 +900,7 @@ function joker_SaveContactDetails($params) {
     $Joker->ExecuteAction("domain-owner-change", $reqParams);
 
     if ($Joker->hasError()) {
-        $errorMsgs[] = "Registrant: ".$Joker->getError();
+        $errorMsgs[] = "Registrant: " . $Joker->getError();
     }
 
     $reqParams = Array();
@@ -913,7 +909,7 @@ function joker_SaveContactDetails($params) {
     $Joker->ExecuteAction('query-whois', $reqParams);
 
     if ($Joker->hasError()) {
-        $errorMsgs[] = "Domain Info: ".$Joker->getError();
+        $errorMsgs[] = "Domain Info: " . $Joker->getError();
     } else {
 
         $contacts = array(
@@ -922,13 +918,13 @@ function joker_SaveContactDetails($params) {
             "Billing" => $Joker->getValue("domain.billing-c")
         );
 
-        foreach($contacts as $type => $handle) {
+        foreach ($contacts as $type => $handle) {
             if (isset($params["contactdetails"][$type])) {
                 $phonenumber = $params["contactdetails"][$type]["Phone"];
                 $country = $params["contactdetails"][$type]["Country"];
                 $phoneprefix = $countrycallingcodes[$country];
-                if ((substr($phonenumber,0,1)!="+") && ($phoneprefix)) {
-                    $params["contactdetails"][$type]["Phone"] = "+".$phoneprefix.".".$phonenumber;
+                if ((substr($phonenumber, 0, 1) != "+") && ($phoneprefix)) {
+                    $params["contactdetails"][$type]["Phone"] = "+" . $phoneprefix . "." . $phonenumber;
                 }
                 $reqParams = Array();
                 $reqParams["handle"] = $handle;
@@ -942,14 +938,14 @@ function joker_SaveContactDetails($params) {
                 $reqParams["address-1"] = $params["contactdetails"][$type]["Address 1"];
                 $reqParams["address-2"] = $params["contactdetails"][$type]["Address 2"];
                 //$reqParams["title"] = $params["contactdetails"][$type]["Job Title"];
-                $reqParams["name"] = $params["contactdetails"][$type]["First Name"].' '.$params["contactdetails"][$type]["Last Name"];
+                $reqParams["name"] = $params["contactdetails"][$type]["First Name"] . ' ' . $params["contactdetails"][$type]["Last Name"];
                 $reqParams["organization"] = $params["contactdetails"][$type]["Organisation Name"];
                 if ($params['original']['domainObj']->getLastTLDSegment() == 'eu') {
                     $reqParams["lang"] = "EN";
                 }
                 $Joker->ExecuteAction('contact-modify', $reqParams);
                 if ($Joker->hasError()) {
-                    $errorMsgs[] = "$type: ".$Joker->getError();
+                    $errorMsgs[] = "$type: " . $Joker->getError();
                 }
             }
         }
@@ -958,41 +954,40 @@ function joker_SaveContactDetails($params) {
     $values["error"] = implode(', ', $errorMsgs);
 
     return $values;
-
 }
 
 /*
-function joker_GetEPPCode($params) {
+  function joker_GetEPPCode($params) {
 
-    // Need to integrate flag in DMAPI send the AuthCode to the registrant's email, instead of showing it in the DMAPI results
+  // Need to integrate flag in DMAPI send the AuthCode to the registrant's email, instead of showing it in the DMAPI results
 
-    $params = injectDomainObjectIfNecessary($params);
+  $params = injectDomainObjectIfNecessary($params);
 
-    $idn_domain = $params['original']['domainObj']->getDomain(true);
+  $idn_domain = $params['original']['domainObj']->getDomain(true);
 
-    $reqParams = Array();
-    $reqParams["domain"] = $idn_domain;
- 
-    $Joker = DMAPIClient::getInstance($params);
-    $Joker->ExecuteAction("domain-transfer-get-auth-id", $reqParams);
+  $reqParams = Array();
+  $reqParams["domain"] = $idn_domain;
 
-    if ($Joker->hasError()) {
-        $values["error"] = $Joker->getError();
-    }
+  $Joker = DMAPIClient::getInstance($params);
+  $Joker->ExecuteAction("domain-transfer-get-auth-id", $reqParams);
 
-    return $values;
+  if ($Joker->hasError()) {
+  $values["error"] = $Joker->getError();
+  }
 
-}
-*/
+  return $values;
+
+  }
+ */
 
 function joker_FetchEPPCodeClient($params) {
 
     $values = array(
         'templatefile' => 'eppcode',
         'vars' => joker_FetchEPPCode($params),
-        'breadcrumb' => array( 'clientarea.php?action=domaindetails&domainid='.$params['domainid'].'&modop=custom&a=FetchEPPCode' => 'EPP Code' )
+        'breadcrumb' => array('clientarea.php?action=domaindetails&domainid=' . $params['domainid'] . '&modop=custom&a=FetchEPPCode' => 'EPP Code')
     );
-    
+
     return $values;
 }
 
@@ -1021,7 +1016,7 @@ function joker_FetchEPPCode($params) {
     $reqParams["showall"] = 1;
     $reqParams["pending"] = 1;
     $reqParams["limit"] = 1;
-    
+
     $Joker->ExecuteAction('result-list', $reqParams);
 
     $procid = false;
@@ -1037,7 +1032,8 @@ function joker_FetchEPPCode($params) {
     if ($procid) {
         $timeout = 30; //seconds
 
-        $authid = false; $error = false;
+        $authid = false;
+        $error = false;
 
         $start_time = time();
         while (!$error && !$authid && ($start_time + $timeout) >= time()) {
@@ -1045,16 +1041,16 @@ function joker_FetchEPPCode($params) {
             $reqParams["Proc-ID"] = $procid;
             $rawMsg = $Joker->ExecuteAction("result-retrieve", $reqParams);
             if ($Joker->hasError()) {
-                $values["error"] = "EPP-Code: ".$Joker->getError();
+                $values["error"] = "EPP-Code: " . $Joker->getError();
                 $error = true;
             }
 
             if ($Joker->getValue("Completion-Status") == "ack") {
                 $matches = array();
-                if (preg_match('/^The Authorization ID is: "([^"]+)"/m', $rawMsg,$matches)) {
+                if (preg_match('/^The Authorization ID is: "([^"]+)"/m', $rawMsg, $matches)) {
                     $authid = $matches[1];
                     $values["eppcode"] = $authid;
-                    $values["message"] = "The Epp-Code is: ".$authid;
+                    $values["message"] = "The Epp-Code is: " . $authid;
                 } else {
                     $error = true;
                     $values["error"] = "EPP-Code: not found";
@@ -1076,7 +1072,6 @@ function joker_FetchEPPCode($params) {
     return $values;
 }
 
-
 function joker_RegisterNameserver($params) {
 
     $params = injectDomainObjectIfNecessary($params);
@@ -1095,7 +1090,6 @@ function joker_RegisterNameserver($params) {
     $values["error"] = $error;
 
     return $values;
-
 }
 
 function joker_ModifyNameserver($params) {
@@ -1117,7 +1111,6 @@ function joker_ModifyNameserver($params) {
     $values["error"] = $error;
 
     return $values;
-
 }
 
 function joker_DeleteNameserver($params) {
@@ -1136,10 +1129,9 @@ function joker_DeleteNameserver($params) {
     $values["error"] = $error;
 
     return $values;
-
 }
 
-function joker_ManageDNSSEC($params,$fields) {
+function joker_ManageDNSSEC($params, $fields) {
     $successful = false;
     $error = false;
     $configured = false;
@@ -1152,7 +1144,7 @@ function joker_ManageDNSSEC($params,$fields) {
     if ($_SERVER['REQUEST_METHOD'] === 'GET' || isset($_POST['refresh'])) {
         // Load DNSSEC data currently not possible
         $Joker = DMAPIClient::getInstance($params);
-        $Joker->ExecuteAction('whois', array('domain'=>$idn_domain,'disclaimer'=>0),'get');
+        $Joker->ExecuteAction('whois', array('domain' => $idn_domain, 'disclaimer' => 0), 'get');
         if (!$Joker->hasError()) {
             $configured = ($Joker->getValue("DNSSEC") == "signedDelegation");
         } else {
@@ -1163,38 +1155,40 @@ function joker_ManageDNSSEC($params,$fields) {
         unset($records[$_POST['removeRecord']]);
     } elseif (isset($_POST['addRecord'])) {
         $records = $_POST['records'];
-        if (count($records)>=6) {
+        if (count($records) >= 6) {
             $error = 'You cannot add more than 6 records';
         } else {
             $newRecord = array();
-            foreach($fields as $field) {
-                $newRecord[$field] = isset($_POST[$field])?$_POST[$field]:'';
+            foreach ($fields as $field) {
+                $newRecord[$field] = isset($_POST[$field]) ? $_POST[$field] : '';
             }
             $records[] = $newRecord;
             $record_added = true;
         }
-    } elseif (isset($_POST['save'])||isset($_POST['deactivate'])) {
-        $records = isset($_POST['records'])?$_POST['records']:array();
+    } elseif (isset($_POST['save']) || isset($_POST['deactivate'])) {
+        $records = isset($_POST['records']) ? $_POST['records'] : array();
         $reqParams = Array();
         $reqParams["domain"] = $idn_domain;
         $reqParams["dnssec"] = 0;
         if (!empty($records) && is_array($records)) {
             $reqParams["dnssec"] = 1;
             $set = 0;
-            foreach($records as $record) {
-                if (++$set > 6) { break; }
+            foreach ($records as $record) {
+                if (++$set > 6) {
+                    break;
+                }
                 if (isset($record['pubkey'])) {
-                    $record['pubkey'] = str_replace(array(" ","\n","\r","\t"),"",$record['pubkey']);
+                    $record['pubkey'] = str_replace(array(" ", "\n", "\r", "\t"), "", $record['pubkey']);
                 }
                 if (isset($record['digest'])) {
-                    $record['digest'] = str_replace(array(" ","\n","\r","\t"),"",$record['digest']);
+                    $record['digest'] = str_replace(array(" ", "\n", "\r", "\t"), "", $record['digest']);
                 }
-                $reqParams["ds-$set"] = implode(':',array_replace(array_flip($fields), $record));
+                $reqParams["ds-$set"] = implode(':', array_replace(array_flip($fields), $record));
             }
         }
         $Joker = DMAPIClient::getInstance($params);
         $Joker->ExecuteAction('domain-modify', $reqParams);
-    
+
         if ($Joker->hasError()) {
             $error = $Joker->getError();
         } else {
@@ -1211,7 +1205,7 @@ function joker_ManageDNSSEC($params,$fields) {
     if ($error) {
         $values['error'] = $error;
     }
-    
+
     return $values;
 }
 
@@ -1219,35 +1213,34 @@ function joker_ManageDNSSEC_DS($params) {
     global $_LANG;
     $vars = joker_ManageDNSSEC(
             $params,
-            array("keyTag","alg","digestType","digest")
+            array("keyTag", "alg", "digestType", "digest")
     );
     $values = array(
         'templatefile' => "dnssec_ds",
         'vars' => $vars,
-        'breadcrumb' => array( 'clientarea.php?action=domaindetails&domainid='.$params['domainid'].'&modop=custom&a=ManageDNSSEC_DS' => $_LANG['dnssec']['ds_page_title'] )
+        'breadcrumb' => array('clientarea.php?action=domaindetails&domainid=' . $params['domainid'] . '&modop=custom&a=ManageDNSSEC_DS' => $_LANG['dnssec']['ds_page_title'])
     );
     return $values;
 }
 
 function joker_ManageDNSSEC_KD($params) {
     global $_LANG;
-    
+
     $vars = joker_ManageDNSSEC(
-        $params,
-        array("protocol","alg","flags","pubkey")
+            $params,
+            array("protocol", "alg", "flags", "pubkey")
     );
 
     $values = array(
         'templatefile' => 'dnssec_kd',
         'vars' => $vars,
-        'breadcrumb' => array( 'clientarea.php?action=domaindetails&domainid='.$params['domainid'].'&modop=custom&a=ManageDNSSEC_KD' => $_LANG['dnssec']['kd_page_title'] )
+        'breadcrumb' => array('clientarea.php?action=domaindetails&domainid=' . $params['domainid'] . '&modop=custom&a=ManageDNSSEC_KD' => $_LANG['dnssec']['kd_page_title'])
     );
 
     return $values;
 }
 
-function joker_IDProtectToggle($params)
-{
+function joker_IDProtectToggle($params) {
     $values = array();
     $params = injectDomainObjectIfNecessary($params);
     $idn_domain = $params['original']['domainObj']->getDomain(true);
@@ -1256,7 +1249,7 @@ function joker_IDProtectToggle($params)
     $protectEnable = (bool) $params['protectenable'];
     $buyPrivacy = false;
     $currentPrivacyStatus = false;
-    
+
     $reqParams = Array();
     $reqParams["pattern"] = $idn_domain;
     $reqParams["showprivacy"] = 1;
@@ -1277,7 +1270,7 @@ function joker_IDProtectToggle($params)
         $values['error'] = "Domain not found";
         return $values;
     }
-    
+
     if ($buyPrivacy) {
         $reqParams = Array();
         $reqParams["domain"] = $idn_domain;
@@ -1287,18 +1280,17 @@ function joker_IDProtectToggle($params)
         if ($Joker->hasError()) {
             $values['error'] = $Joker->getError();
         }
-    } elseif ($currentPrivacyStatus!=$protectEnable) {
+    } elseif ($currentPrivacyStatus != $protectEnable) {
         $reqParams = Array();
         $reqParams["domain"] = $idn_domain;
         $reqParams["pname"] = "privacy";
-        $reqParams["pvalue"] = $protectEnable?"pro":"off";
+        $reqParams["pvalue"] = $protectEnable ? "pro" : "off";
         $Joker->ExecuteAction('domain-set-property', $reqParams);
         if ($Joker->hasError()) {
             $values['error'] = $Joker->getError();
         }
     }
     return $values;
-
 }
 
 /**
@@ -1317,10 +1309,7 @@ function joker_IDProtectToggle($params)
  *
  * @return \WHMCS\Domains\DomainLookup\ResultsList An ArrayObject based collection of \WHMCS\Domains\DomainLookup\SearchResult results
  */
-
-
-function joker_CheckAvailability($params)
-{
+function joker_CheckAvailability($params) {
     // availability check parameters
     $searchTerm = $params['searchTerm'];
     $punyCodeSearchTerm = $params['punyCodeSearchTerm'];
@@ -1329,21 +1318,25 @@ function joker_CheckAvailability($params)
     $premiumEnabled = (bool) $params['premiumEnabled'];
 
     $error = "";
-    
+
     $results = new ResultsList();
 
-    foreach($tldsToInclude as $dotTld) {
-        $sld = $isIdnDomain?$punyCodeSearchTerm:$searchTerm;
+    foreach ($tldsToInclude as $dotTld) {
+        $sld = $isIdnDomain ? $punyCodeSearchTerm : $searchTerm;
         $tld = substr($dotTld, 1);
-        $domain = $sld.'.'.$tld;
+        $domain = $sld . '.' . $tld;
 
         $Joker = DMAPIClient::getInstance($params);
-        $reqParams = Array("domain" => $domain);
+        $reqParams = Array(
+            'domain' => $domain,
+            'check-price' => 'create',
+            'period' => "1"
+        );
         $Joker->ExecuteAction('domain-check', $reqParams);
         $searchResult = new SearchResult($sld, $tld);
         if ($Joker->hasError()) {
             $error = $Joker->getError();
-            if (strpos($error,'Domain with extension supported by Joker.com')) {
+            if (strpos($error, 'Domain with extension supported by Joker.com')) {
                 $status = SearchResult::STATUS_TLD_NOT_SUPPORTED;
             } else {
                 $status = SearchResult::STATUS_UNKNOWN;
@@ -1352,47 +1345,66 @@ function joker_CheckAvailability($params)
             $status_row = $Joker->getValue('domain-status');
             $status_text = '';
             $matches = array();
-            if (preg_match("/^(?P<status>[a-z]+)(?::(?P<reason>[^\[]+))?(?: *\[(?P<infos>[^\]]*)\])?/i", $status_row,$matches)) {
+            if (preg_match("/^(?P<status>[a-z]+)(?::(?P<reason>[^\[]+))?(?: *\[(?P<infos>[^\]]*)\])?/i", $status_row, $matches)) {
                 $status_text = $matches['status'];
             }
-            switch($status_text) {
+            switch ($status_text) {
                 case 'free':
                 case 'available':
                     $status = SearchResult::STATUS_NOT_REGISTERED;
                     break;
+                case 'premium':
+                    $status = $premiumEnabled ? SearchResult::STATUS_NOT_REGISTERED : SearchResult::STATUS_REGISTERED;
+                    break;
                 default:
                 case 'unavailable':
-                    $status=SearchResult::STATUS_REGISTERED;
+                    $status = SearchResult::STATUS_REGISTERED;
                     break;
             }
         }
+        $domainClass = $Joker->getValue('domain-class');
         $searchResult->setStatus($status);
+
         // Return premium information if applicable
-        /*
-        if ($domain['isPremiumName']) {
+        if ($premiumEnabled && $domainClass == 'premium') {
             $searchResult->setPremiumDomain(true);
-            $searchResult->setPremiumCostPricing(
-                array(
-                    'register' => $domain['premiumRegistrationPrice'],
-                    'renew' => $domain['premiumRenewPrice'],
-                    'CurrencyCode' => 'USD',
-                )
+            $priceInfo = explode(' ', $Joker->getValue('domain-price-create'));
+            $createPrice = $priceInfo[0];
+            $currency = $priceInfo[1];
+            $renewPrice = null;
+
+            $reqParams['check-price'] = 'renew';
+            $Joker->ExecuteAction('domain-check', $reqParams);
+            if (!$Joker->hasError()) {
+                $priceInfo = explode(' ', $Joker->getValue('domain-price-renew'));
+                $domainClass = $Joker->getValue('domain-class');
+                if ($domainClass == 'premium') {
+                    $renewPrice = $priceInfo[0];
+                }
+            } else {
+                $renewPrice = $createPrice;
+            }
+            $premiumPricing = array(
+                'register' => $createPrice,
+                'CurrencyCode' => $currency,
             );
+            if (isset($renewPrice)) {
+                $premiumPricing['renew'] = $renewPrice;
+            }
+            $searchResult->setPremiumCostPricing($premiumPricing);
         }
-        */
         $results->append($searchResult);
     }
 
     return $results;
 }
 
-function joker_GetDomainSuggestions($params)
-{
+function joker_GetDomainSuggestions($params) {
     return new ResultsList();
 }
 
 function joker_SyncManual($params) {
-$params = injectDomainObjectIfNecessary($params);
+    $params = injectDomainObjectIfNecessary($params);
     $values = array();
 
     $idn_domain = $params['original']['domainObj']->getDomain(true);
@@ -1418,36 +1430,36 @@ $params = injectDomainObjectIfNecessary($params);
         if ($params['SyncNextDueDate']) {
             $values['nextduedate'] = $values['expirydate'];
         }
-        $expDate = new DateTime($values['expirydate'],new DateTimeZone('UTC'));
-        $now = new DateTime(null,new DateTimeZone('UTC'));
+        $expDate = new DateTime($values['expirydate'], new DateTimeZone('UTC'));
+        $now = new DateTime(null, new DateTimeZone('UTC'));
         if ($expDate > $now) {
             $values['status'] = "Active";
         } else {
             $values['status'] = "Expired";
         }
     } else {
-            $reqParams = Array();
-            $reqParams["rtype"] = "domain-r*";
-            $reqParams["objid"] = $idn_domain;
-            $reqParams["showall"] = 1;
-            $reqParams["pending"] = 1;
-            $reqParams["limit"] = 1;
-            $reqParams["period"] = 1;
+        $reqParams = Array();
+        $reqParams["rtype"] = "domain-r*";
+        $reqParams["objid"] = $idn_domain;
+        $reqParams["showall"] = 1;
+        $reqParams["pending"] = 1;
+        $reqParams["limit"] = 1;
+        $reqParams["period"] = 1;
 
-            $Joker = DMAPIClient::getInstance($params);
-            $Joker->ExecuteAction('result-list', $reqParams);
+        $Joker = DMAPIClient::getInstance($params);
+        $Joker->ExecuteAction('result-list', $reqParams);
 
-            if ($Joker->hasError()) {
-                $values['error'] = $Joker->getError();
-            } elseif ($Joker->getHeaderValue('Row-Count') > 0) {
-                $resultList = $Joker->getResponseList();
-                $status = $resultList[0][5];
-                if ($status == "nack") {
-                    $values['status'] = "Cancelled";
-                }
-            } else {
-                $values['error'] = "Domain/Order not found";
+        if ($Joker->hasError()) {
+            $values['error'] = $Joker->getError();
+        } elseif ($Joker->getHeaderValue('Row-Count') > 0) {
+            $resultList = $Joker->getResponseList();
+            $status = $resultList[0][5];
+            if ($status == "nack") {
+                $values['status'] = "Cancelled";
             }
+        } else {
+            $values['error'] = "Domain/Order not found";
+        }
     }
     if (!isset($values['error'])) {
         $values['domainid'] = $params['domainid'];
@@ -1468,11 +1480,11 @@ function joker_Sync($params) {
     $reqParams = Array();
     $reqParams["pattern"] = $idn_domain;
     //$reqParams["showstatus"] = 1;
-    
+
 
     $Joker = DMAPIClient::getInstance($params);
     $Joker->ExecuteAction('query-domain-list', $reqParams);
-    
+
     if ($Joker->hasError()) {
         $values['error'] = $Joker->getError();
     }
@@ -1486,8 +1498,8 @@ function joker_Sync($params) {
         if ($params['SyncNextDueDate']) {
             $values['nextduedate'] = $values['expirydate'];
         }
-        $expDate = new DateTime($values['expirydate'],new DateTimeZone('UTC'));
-        $now = new DateTime(null,new DateTimeZone('UTC'));
+        $expDate = new DateTime($values['expirydate'], new DateTimeZone('UTC'));
+        $now = new DateTime(null, new DateTimeZone('UTC'));
         if ($expDate > $now) {
             $values['active'] = true;
         } else {
@@ -1518,11 +1530,9 @@ function joker_Sync($params) {
         }
     }
     return $values;
-
 }
 
-
-function joker_TransferSync($params){
+function joker_TransferSync($params) {
 
     $params = injectDomainObjectIfNecessary($params);
 
@@ -1546,10 +1556,10 @@ function joker_TransferSync($params){
     } elseif ($Joker->getHeaderValue('Row-Count') > 0) {
         $resultList = $Joker->getResponseList();
         $status = $resultList[0][5];
-        switch($status) {
+        switch ($status) {
             case "pending":
-                    $values['pendingtransfer'] = true;
-                    $values['reason'] = "";
+                $values['pendingtransfer'] = true;
+                $values['reason'] = "";
                 break;
             case "ack":
                 $values['completed'] = true;
@@ -1568,13 +1578,11 @@ function joker_TransferSync($params){
                 $values['reason'] = "";
                 break;
         }
-
     } else {
         $values['error'] = "Domain not found";
     }
 
     return $values;
-
 }
 
 function joker_CleanupContactDetails($params) {
@@ -1591,14 +1599,14 @@ function joker_CleanupContactDetails($params) {
 
     if (isset($params["contactdetails"]["Registrant"]["Phone"])) {
         // import $countrycallingcodes from WHMCS includes
-        if (file_exists(ROOTDIR.'/includes/countriescallingcodes.php')) {
-            require_once (ROOTDIR."/includes/countriescallingcodes.php");
+        if (file_exists(ROOTDIR . '/includes/countriescallingcodes.php')) {
+            require_once (ROOTDIR . "/includes/countriescallingcodes.php");
 
             $country = $params["contactdetails"]["Registrant"]["Country"];
             $phoneprefix = $countrycallingcodes[$country];
             $phonenumber = $params["contactdetails"]["Registrant"]["Phone"];
-            if ((substr($phonenumber,0,1)!="+") && ($phoneprefix)) {
-                $params["contactdetails"]["Registrant"]["Phone"] = "+".$phoneprefix.".".ltrim($phonenumber,'0');
+            if ((substr($phonenumber, 0, 1) != "+") && ($phoneprefix)) {
+                $params["contactdetails"]["Registrant"]["Phone"] = "+" . $phoneprefix . "." . ltrim($phonenumber, '0');
             }
         }
     }
@@ -1622,9 +1630,9 @@ function joker_CleanupContactDetails($params) {
 }
 
 function joker_ClientAreaCustomButtonArray($params) {
-    
+
     global $_LANG;
-    
+
     $params = injectDomainObjectIfNecessary($params);
     $tld = $params['original']['domainObj']->getTopLevel();
 
@@ -1633,12 +1641,12 @@ function joker_ClientAreaCustomButtonArray($params) {
 
     $Joker = DMAPIClient::getInstance($params);
     $Joker->ExecuteAction('inquire-tld', array('tld' => $tld), 'get');
-    
+
     if (!$Joker->hasError()) {
         $dnssec = $Joker->getValue('dnssec');
-        if (strpos($dnssec,'keydata')!==false) {
+        if (strpos($dnssec, 'keydata') !== false) {
             $buttonarray[$_LANG['dnssec']['kd_page_title']] = "ManageDNSSEC_KD";
-        } elseif (strpos($dnssec,'dsdata')!==false) {
+        } elseif (strpos($dnssec, 'dsdata') !== false) {
             $buttonarray[$_LANG['dnssec']['ds_page_title']] = "ManageDNSSEC_DS";
         }
     }
