@@ -454,6 +454,13 @@ function joker_TransferDomain($params) {
     if (isset($params["idprotection"]) && $params["idprotection"]) {
         $reqParams["privacy"] = "pro";
     }
+    
+    $premiumDomainsEnabled = (bool) $params['premiumEnabled'];
+    $premiumDomainsCost = $params['premiumCost'];
+    
+    if ($premiumDomainsEnabled && $premiumDomainsCost) {
+        $reqParams["max-price"] = ceil($premiumDomainsCost);
+    }
 
     $Joker->ExecuteAction("domain-transfer-in-reseller", $reqParams);
 
@@ -514,7 +521,7 @@ function joker_RenewDomain($params) {
         }
         $Joker->ExecuteAction("domain-renew", $reqParams);
     } elseif ($params['TryRestoreFromRGP']) {
-        // TODO: Add Privacy. What about additional domain years?
+        // TODO: Add Privacy and Premium. What about additional domain years?
         $reqParams = Array();
         $reqParams["domain"] = $idn_domain;
         $Joker->ExecuteAction("domain-redeem", $reqParams);
