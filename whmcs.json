@@ -1,0 +1,25 @@
+{
+  "schema": "1.0",
+  "type": "whmcs-registrars",
+  "name": "Joker.com",
+  "license": "proprietary",
+  "category": "domains",
+  "description": {
+    "name": "Joker.com",
+    "tagline": "A leading ICANN-accredited registrar and domain resale provider.",
+    "long": "Joker.com is in the registrar business since 1997, effectively being one of the first registrars ever. This also shows - we are quite a pioneer in this area, and gained great experience in registering domains. We also became ICANN accredited soon in 2001, and successfully provided domain names since then."
+  },
+  "logo": {
+    "filename": "logo.gif"
+  },
+  "support": {
+    "homepage": "https:\/\/joker.com\/",
+    "docs_url": "https:\/\/joker.com\/sf\/whmcs"
+  },
+  "authors": [
+    {
+      "name": "Joker.com",
+      "homepage": "https:\/\/joker.com\/"
+    }
+  ]
+}
