@@ -150,7 +150,7 @@ class DMAPIClient {
     private function parseResponseList($data) {
         $result = array();
         $separator = " ";
-        if (isset($this->Header['Separator']) && $this->Header['Separator'] == 'TAB') {
+        if (isset($this->Header['Separator']) && $this->Header['Separator'] == 'TAB' || substr($this->Command, 0, 3) === "v2/" ) {
             $separator = "\t";
         }
         $columnTitles = Array();
@@ -176,7 +176,7 @@ class DMAPIClient {
         return $result;
     }
 
-    public function ExecuteAction($command, $params, $method = 'post') {
+    public function ExecuteAction($command, $params = Array(), $method = 'post') {
         if ($this->Session === false) {
             $loginResult = $this->Login();
             if ($this->Session === false) {

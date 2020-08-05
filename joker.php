@@ -40,6 +40,7 @@ require_once dirname(__FILE__) . '/translations.php';
 
 use WHMCS\Domains\DomainLookup\ResultsList;
 use WHMCS\Domains\DomainLookup\SearchResult;
+use WHMCS\Domain\TopLevel\ImportItem;
 
 function joker_getConfigArray() {
     $configarray = array(
@@ -1408,6 +1409,60 @@ function joker_CheckAvailability($params) {
 
 function joker_GetDomainSuggestions($params) {
     return new ResultsList();
+}
+
+function joker_GetTldPricing($params)
+{
+    $Joker = DMAPIClient::getInstance($params);
+    
+    $Joker->ExecuteAction("v2/query-price-list", Array(), "get");
+    if ($Joker->hasError()) {
+        return array('error' => $Joker->getError());
+    }
+
+    $results = new ResultsList;
+
+    $priceList = $Joker->getResponseList();
+    
+    $prices = Array();
+    
+    $currency = $priceList[0]['currency'];
+
+    foreach($priceList as $data) {
+
+        if (in_array($data['type'],array("domain","domain_promo"))) {
+            if (!isset($prices[$data['tld']])) {
+                $prices[$data['tld']] = Array();
+            }
+            switch($data['operation']) {
+                case "create":
+                    $prices[$data['tld']]['registrationPrice'] = $data['price-1y'];
+                    break;
+                case "transfer":
+                    $prices[$data['tld']]['transferPrice'] = $data['price-1y'];
+                    break;
+                case "renew":
+                    $prices[$data['tld']]['renewalPrice'] = $data['price-1y'];
+                    break;
+                case "rgp":
+                    $prices[$data['tld']]['redemptionFee'] = $data['price-1y']=="n/a"?null:$data['price-1y'];
+                    break;
+            }
+        }
+    }
+
+    foreach($prices as $tld => $price) {
+        $item = (new ImportItem)
+            ->setExtension($tld)
+            ->setRegisterPrice($price['registrationPrice'])
+            ->setRenewPrice($price['renewalPrice'])
+            ->setTransferPrice($price['transferPrice'])
+            ->setRedemptionFeePrice(isset($price['redemptionFee'])?$price['redemptionFee']:null)
+            ->setCurrency($currency);
+
+        $results[] = $item;
+    }
+    return $results;
 }
 
 function joker_SyncManual($params) {

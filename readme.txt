@@ -1,8 +1,8 @@
 -------------------------------------------------
  Joker.com registrar module for WHMCS
 -------------------------------------------------
-Version 1.2.5
-Tested with WHMCS 7.8.3
+Version 1.3.0
+Tested with WHMCS 7.10.2
 
 
 Features:
@@ -14,6 +14,7 @@ The following registrar core functionality is provided:
 * allow viewing and changing of nameservers
 * allow viewing and changing of WHOIS information of domains
 * usable with any TLD Joker.com offers
+* TLD & pricing sync
 
 Additionally, also these features are provided:
 * create/edit email forwards
