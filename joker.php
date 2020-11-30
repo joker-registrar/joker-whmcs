@@ -339,13 +339,15 @@ function joker_RegisterDomain($params) {
     if (isset($owner_result['error']) && $owner_result['error']) {
         return $owner_result;
     }
-    $admin_result = $owner_result;
-
-    // Don't use admin contact for now, to speed up registration
-    //$admin_result = joker_CreateAdminContact($params);
-    //if (isset($admin_result['error']) && $admin_result['error']) {
-    //    return $admin_result;
-    //}
+    
+    if (\WHMCS\Config\Setting::getValue("RegistrarAdminUseClientDetails") == "on") {
+        $admin_result = $owner_result;
+    } else {
+        $admin_result = joker_CreateAdminContact($params);
+        if (isset($admin_result['error']) && $admin_result['error']) {
+            return $admin_result;
+        }
+    }
 
     $params = injectDomainObjectIfNecessary($params);
 
@@ -428,6 +430,15 @@ function joker_TransferDomain($params) {
     if (isset($owner_result['error']) && $owner_result['error']) {
         return $owner_result;
     }
+    
+    if (\WHMCS\Config\Setting::getValue("RegistrarAdminUseClientDetails") == "on") {
+        $admin_result = $owner_result;
+    } else {
+        $admin_result = joker_CreateAdminContact($params);
+        if (isset($admin_result['error']) && $admin_result['error']) {
+            return $admin_result;
+        }
+    }
 
     $params = injectDomainObjectIfNecessary($params);
 
@@ -437,9 +448,9 @@ function joker_TransferDomain($params) {
     $reqParams["domain"] = $idn_domain;
     $reqParams["transfer-auth-id"] = $params["transfersecret"];
     $reqParams["owner-c"] = $owner_result['handle'];
-    $reqParams["admin-c"] = $owner_result['handle'];
-    $reqParams["tech-c"] = $owner_result['handle'];
-    $reqParams["billing-c"] = $owner_result['handle'];
+    $reqParams["admin-c"] = $admin_result['handle'];
+    $reqParams["tech-c"] = $admin_result['handle'];
+    $reqParams["billing-c"] = $admin_result['handle'];
     $reqParams["autorenew"] = '0';
 
     $nslist = array();
@@ -655,6 +666,9 @@ function joker_CreateOwnerContact($params) {
         $reqParams["company-number"] = $params["additionalfields"]['Company ID Number'];
     } elseif ($params['domainObj']->getLastTLDSegment() == 'eu') {
         $reqParams["lang"] = "EN";
+        $reqParams["x-eu-country-of-citizenship"] = isset($params["additionalfields"]['x-eu-country-of-citizenship'])?$params["additionalfields"]['x-eu-country-of-citizenship']:'';
+        $reqParams["x-eu-natural-person"] = !empty($reqParams["x-eu-country-of-citizenship"])?"true":"false";
+        
     }
 
     $Joker = DMAPIClient::getInstance($params);
@@ -828,7 +842,30 @@ function joker_SaveContactDetails($params) {
     $reqParams["name"] = $params["contactdetails"]["Registrant"]["First Name"] . ' ' . $params["contactdetails"]["Registrant"]["Last Name"];
     $reqParams["organization"] = $params["contactdetails"]["Registrant"]["Organisation Name"];
 
-    if ($params['original']['domainObj']->getLastTLDSegment() == 'us') {
+    if ($params['original']['domainObj']->getLastTLDSegment() == 'fi') {
+        unset($reqParams["name"]);
+        $reqParams["fname"] = $params["contactdetails"]["Registrant"]["First Name"];
+        $reqParams["lname"] = $params["contactdetails"]["Registrant"]["Last Name"];
+
+        $reqParams["x-ficora-type"] = strtolower($params["additionalfields"]['x-ficora-type']);
+        $reqParams["x-ficora-is-finnish"] = $params["additionalfields"]['x-ficora-is-finnish'];
+
+        if ($reqParams["x-ficora-type"] == 'privateperson') {
+            if ($reqParams["x-ficora-is-finnish"] == 'yes') {
+                $reqParams["x-ficora-identity"] = $params["additionalfields"]["x-ficora-registernumber"];
+            } else {
+                $reqParams["x-ficora-birthdate"] = $params["additionalfields"]["x-ficora-registernumber"];
+                if (!preg_match("/^\d{4}-\d{2}-\d{2}$/", $reqParams["x-ficora-birthdate"])) {
+                    $date = date_parse($reqParams["x-ficora-birthdate"]);
+                    if ($date['day'] !== false && $date['month'] !== false && $date['year'] !== false) {
+                        $reqParams["x-ficora-birthdate"] = sprintf("%04d-%02d-%02d", $date['year'], $date['month'], $date['day']);
+                    }
+                }
+            }
+        } else {
+            $reqParams["x-ficora-registernumber"] = $params["additionalfields"]["x-ficora-registernumber"];
+        }
+    } elseif ($params['original']['domainObj']->getLastTLDSegment() == 'us') {
 
         $nexus = $params["additionalfields"]['Nexus Category'];
         $countrycode = $params["additionalfields"]['Nexus Country'];
@@ -902,6 +939,8 @@ function joker_SaveContactDetails($params) {
         $reqParams["company-number"] = $params["additionalfields"]['Company ID Number'];
     } elseif ($params['original']['domainObj']->getLastTLDSegment() == 'eu') {
         $reqParams["lang"] = "EN";
+        $reqParams["x-eu-natural-person"] = strtolower($params["additionalfields"]['x-eu-natural-person']);
+        $reqParams["x-eu-country-of-citizenship"] = $params["additionalfields"]['x-eu-country-of-citizenship'];
     }
 
     $Joker = DMAPIClient::getInstance($params);
@@ -950,6 +989,8 @@ function joker_SaveContactDetails($params) {
                 $reqParams["organization"] = $params["contactdetails"][$type]["Organisation Name"];
                 if ($params['original']['domainObj']->getLastTLDSegment() == 'eu') {
                     $reqParams["lang"] = "EN";
+                    $reqParams["x-eu-natural-person"] = strtolower($params["additionalfields"]['x-eu-natural-person']);
+                    $reqParams["x-eu-country-of-citizenship"] = $params["additionalfields"]['x-eu-country-of-citizenship'];
                 }
                 $Joker->ExecuteAction('contact-modify', $reqParams);
                 if ($Joker->hasError()) {

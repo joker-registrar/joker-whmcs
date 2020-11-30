@@ -39,3 +39,13 @@ $additionaldomainfields[".fi"][] = array(
     "Description" => "Depending on your <em>Legal Type</em> :<br> Please provide your <strong>birthdate</strong> if your are a private person and not finnish.<br> Please provide your <strong>identity number</strong> if your are a private person and finnish.<br> In all other cases, please provides your organizations <strong>registration number</strong>.",
     "Required" => true,
 );
+
+// .EU
+
+$additionaldomainfields[".eu"][] = array(
+    "Name" => "x-eu-country-of-citizenship",
+    "DisplayName" => "Country of EU Citizenship",
+    "Type" => "dropdown",
+    "Options" => ",AX|Åland Islands (AX),AT|Austria (AT),BE|Belgium (BE),BG|Bulgaria (BG),HR|Croatia (HR),CY|Cyprus (CY),CZ|Czech Republic (CZ),DK|Denmark (DK),EE|Estonia (EE),FI|Finland (FI),FR|France (FR),GF|French Guiana (GF),DE|Germany (DE),GI|Gibraltar (GI),GR|Greece (GR),GP|Guadeloupe (GP),HU|Hungary (HU),IS|Iceland (IS),IE|Ireland (IE),IT|Italy (IT),LV|Latvia (LV),LI|Liechtenstein (LI),LT|Lithuania (LT),LU|Luxembourg (LU),MT|Malta (MT),MQ|Martinique (MQ),YT|Mayotte (YT),NL|Netherlands (NL),NO|Norway (NO),PL|Poland (PL),PT|Portugal (PT),RE|Reunion (RE),RO|Romania (RO),MF|Saint Martin (MF),SK|Slovakia (Slovak Republic), (SK),SI|Slovenia (SI),ES|Spain (ES),SE|Sweden (SE),GB|United Kingdom (GB)",
+    "Required" => false,
+);
