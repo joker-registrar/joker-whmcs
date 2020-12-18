@@ -333,7 +333,7 @@ function joker_SaveDNS($params) {
 }
 
 function joker_RegisterDomain($params) {
-
+    
     $owner_result = joker_CreateOwnerContact($params);
 
     if (isset($owner_result['error']) && $owner_result['error']) {
@@ -354,23 +354,10 @@ function joker_RegisterDomain($params) {
     $reqParams = Array();
 
     $idn_domain = $params['domainObj']->getDomain(true);
-
-    //#################################################################################################################
-    //# IDN fix for Swedish language only. Otherwise language will be guessed by Joker depending on registrant country#
+    
     if ($params['domainObj']->isIdn()) {
-        $reqParams["language"] = "";
-        if ($params['language'] == 'swedish') {
-            if (($params["tld"] == "co") || ($params["tld"] == "biz") || ($params["tld"] == "tel")) {
-                $reqParams["language"] = "se";
-            } elseif (($params["tld"] == "com") || ($params["tld"] == "net") || ($params["tld"] == "li") || ($params["tld"] == "fr") || ($params["tld"] == "ch") || ($params["tld"] == "sg") || ($params["tld"] == "com.sg") || ($params["tld"] == "tv") || ($params["tld"] == "co.uk")) {
-                $reqParams["language"] = "swe";
-            } else {
-                $reqParams["language"] = "sv";
-            }
-        }
+        $reqParams["language"] = $params["idnLanguage"];
     }
-    //# END IDN FIX
-    //#################################################################################################################
 
     $premiumDomainsEnabled = (bool) $params['premiumEnabled'];
     $premiumDomainsCost = $params['premiumCost'];
