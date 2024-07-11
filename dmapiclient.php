@@ -165,8 +165,11 @@ class DMAPIClient {
             $values = explode($separator, $line);
             if (count($columnTitles) > 0) {
                 $columns = array();
+                $n = 0;
                 foreach ($values as $key => $value) {
+                    $columns[$n] = $value;
                     $columns[$columnTitles[$key]] = $value;
+                    $n++;
                 }
                 $result[] = $columns;
             } else {
