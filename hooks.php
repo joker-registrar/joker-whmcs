@@ -4,7 +4,7 @@
  ****************************************************************************
  *                                                                          *
  * The MIT License (MIT)                                                    *
- * Copyright (c) 2019 Joker.com                                             *
+ * Copyright (c) 2021 Joker.com                                             *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files                 *
  * (the "Software"), to deal in the Software without restriction, including *
@@ -114,3 +114,35 @@ function joker_after_domain_registration($vars) {
 }
 
 add_hook("AfterRegistrarRegistration", 1, "joker_after_domain_registration");
+
+
+add_hook('PremiumPriceRecalculationOverride', 1, function($vars) {
+    $config = getRegistrarConfigOptions('joker');
+    $client = DMAPIClient::getInstance($config);
+    $domainObj = new WHMCS\Domains\Domain($vars['domainName']);
+    $idn_domain = $domainObj->getDomain(true);
+    $reqParams = Array(
+        'domain' => $idn_domain,
+        'check-price' => 'renew',
+        'period' => "1"
+    );
+    $values = [];
+    $domain = WHMCS\Domain\Domain::where('registrar', 'joker')->where('domain',$vars['domainName'])->first();
+    $client->ExecuteAction('domain-check', $reqParams);
+    if (!$client->hasError()) {
+        $domainClass = $client->getValue('domain-class');
+        $priceInfo = explode(' ', $client->getValue('domain-price-renew'));
+        $price = $priceInfo[0];
+        $currency = $priceInfo[1];
+        if ($domainClass == 'premium') {
+            $userCurrency = getCurrency($domain->userid);
+            $registrarCurrencyId = \WHMCS\Database\Capsule::table("tblcurrencies")->where("code", "=", $currency)->value("id");
+            $values['renew'] = convertCurrency($price, $registrarCurrencyId, $userCurrency["id"]);
+        }
+    }
+    if (!isset($values['renew'])) {
+        $values['renew'] = $domain->recurringamount;
+        $values['skipMarkup'] = true;
+    }
+    return $values;
+});

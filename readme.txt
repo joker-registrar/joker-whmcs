@@ -1,8 +1,8 @@
 -------------------------------------------------
  Joker.com registrar module for WHMCS
 -------------------------------------------------
-Version 1.3.2
-Tested with WHMCS 8.0.4
+Version 1.3.4
+Tested with WHMCS 8.1.3
 
 
 Features:
@@ -29,6 +29,9 @@ Additionally, also these features are provided:
 Installation:
 Please put the content of this archive into the folder modules/registrars/joker/
 of your WHMCS installation.
+In case you want to deal with .FI domains, add the contents of the file 
+"additionalfields.txt" to the WHMCS file in "resources/domains/additionalfields.php". 
+
 The configuration of the Joker.com registrar module is done by using the WHMCS
 admin section. For this, please login as "admin" into your WHMCS installation, and
 navigate to
@@ -51,7 +54,7 @@ status and expiration date with Joker.com, in case it was modified outside of
 WHMCS. This is usually also done automatically by the 'WHMCS domainsync cron'.
 
 Advanced settings:
-If you enable the "CronJob" option of this module, make sure that the 
+If you enable the "CronJob" option of this module, make sure that the
 file 'modules/registrars/joker/cron.php' is executed regularly. We suggest to
 run it every 5 minutes. If the cron.php is not executed and the "CronJob" option
 is enabled, domain registrations will not complete in WHMCS!!!

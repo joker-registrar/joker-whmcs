@@ -41,7 +41,8 @@ $additionaldomainfields[".fi"][] = array(
 );
 
 // .EU
-
+// WHMCS 8.x does come with these extensions already included - only needed for older versions
+/*
 $additionaldomainfields[".eu"][] = array(
     "Name" => "x-eu-country-of-citizenship",
     "DisplayName" => "Country of EU Citizenship",
@@ -49,3 +50,4 @@ $additionaldomainfields[".eu"][] = array(
     "Options" => ",AX|Åland Islands (AX),AT|Austria (AT),BE|Belgium (BE),BG|Bulgaria (BG),HR|Croatia (HR),CY|Cyprus (CY),CZ|Czech Republic (CZ),DK|Denmark (DK),EE|Estonia (EE),FI|Finland (FI),FR|France (FR),GF|French Guiana (GF),DE|Germany (DE),GI|Gibraltar (GI),GR|Greece (GR),GP|Guadeloupe (GP),HU|Hungary (HU),IS|Iceland (IS),IE|Ireland (IE),IT|Italy (IT),LV|Latvia (LV),LI|Liechtenstein (LI),LT|Lithuania (LT),LU|Luxembourg (LU),MT|Malta (MT),MQ|Martinique (MQ),YT|Mayotte (YT),NL|Netherlands (NL),NO|Norway (NO),PL|Poland (PL),PT|Portugal (PT),RE|Reunion (RE),RO|Romania (RO),MF|Saint Martin (MF),SK|Slovakia (Slovak Republic), (SK),SI|Slovenia (SI),ES|Spain (ES),SE|Sweden (SE),GB|United Kingdom (GB)",
     "Required" => false,
 );
+*/

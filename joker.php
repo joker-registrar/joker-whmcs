@@ -4,7 +4,7 @@
  ****************************************************************************
  *                                                                          *
  * The MIT License (MIT)                                                    *
- * Copyright (c) 2019 Joker.com                                             *
+ * Copyright (c) 2021 Joker.com                                             *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files                 *
  * (the "Software"), to deal in the Software without restriction, including *
@@ -333,13 +333,13 @@ function joker_SaveDNS($params) {
 }
 
 function joker_RegisterDomain($params) {
-    
+
     $owner_result = joker_CreateOwnerContact($params);
 
     if (isset($owner_result['error']) && $owner_result['error']) {
         return $owner_result;
     }
-    
+
     if (\WHMCS\Config\Setting::getValue("RegistrarAdminUseClientDetails") == "on") {
         $admin_result = $owner_result;
     } else {
@@ -354,7 +354,7 @@ function joker_RegisterDomain($params) {
     $reqParams = Array();
 
     $idn_domain = $params['domainObj']->getDomain(true);
-    
+
     if ($params['domainObj']->isIdn()) {
         $reqParams["language"] = $params["idnLanguage"];
     }
@@ -379,7 +379,7 @@ function joker_RegisterDomain($params) {
 
 
     if ($params["DefaultNameservers"]) {
-        $reqParams["ns-list"] = "a.ns.joker.com:b.ns.joker.com:c.ns.joker.com";
+        $reqParams["ns-list"] = "x.ns.joker.com:x.ns.joker.com:z.ns.joker.com";
     } else {
         $nslist = array();
         for ($i = 1; $i <= 5; $i++) {
@@ -417,7 +417,7 @@ function joker_TransferDomain($params) {
     if (isset($owner_result['error']) && $owner_result['error']) {
         return $owner_result;
     }
-    
+
     if (\WHMCS\Config\Setting::getValue("RegistrarAdminUseClientDetails") == "on") {
         $admin_result = $owner_result;
     } else {
@@ -453,10 +453,10 @@ function joker_TransferDomain($params) {
     if (isset($params["idprotection"]) && $params["idprotection"]) {
         $reqParams["privacy"] = "pro";
     }
-    
+
     $premiumDomainsEnabled = (bool) $params['premiumEnabled'];
     $premiumDomainsCost = $params['premiumCost'];
-    
+
     if ($premiumDomainsEnabled && $premiumDomainsCost) {
         $reqParams["max-price"] = ceil($premiumDomainsCost);
     }
@@ -652,10 +652,18 @@ function joker_CreateOwnerContact($params) {
         $reqParams["account-type"] = $uklegaltype;
         $reqParams["company-number"] = $params["additionalfields"]['Company ID Number'];
     } elseif ($params['domainObj']->getLastTLDSegment() == 'eu') {
+
         $reqParams["lang"] = "EN";
-        $reqParams["x-eu-country-of-citizenship"] = isset($params["additionalfields"]['x-eu-country-of-citizenship'])?$params["additionalfields"]['x-eu-country-of-citizenship']:'';
-        $reqParams["x-eu-natural-person"] = !empty($reqParams["x-eu-country-of-citizenship"])?"true":"false";
-        
+        // support older and newer WHMCS with extended contact fields included
+        if (isset($params["additionalfields"]["Entity Type"])) {
+            // WHMCS native fields
+            $reqParams["x-eu-natural-person"] = ($params["additionalfields"]["Entity Type"] == "INDIVIDUAL") ? "true" : "false";
+            $reqParams["x-eu-country-of-citizenship"] = $params["additionalfields"]["EU Country of Citizenship"];
+        } elseif (isset($params["additionalfields"]['x-eu-country-of-citizenship'])) {
+            // older WHMCS custom fields
+            $reqParams["x-eu-country-of-citizenship"] = $params["additionalfields"]['x-eu-country-of-citizenship'];
+            $reqParams["x-eu-natural-person"] = empty($reqParams["x-eu-country-of-citizenship"])?"false":"true";
+        }
     }
 
     $Joker = DMAPIClient::getInstance($params);
@@ -926,8 +934,15 @@ function joker_SaveContactDetails($params) {
         $reqParams["company-number"] = $params["additionalfields"]['Company ID Number'];
     } elseif ($params['original']['domainObj']->getLastTLDSegment() == 'eu') {
         $reqParams["lang"] = "EN";
-        $reqParams["x-eu-natural-person"] = strtolower($params["additionalfields"]['x-eu-natural-person']);
-        $reqParams["x-eu-country-of-citizenship"] = $params["additionalfields"]['x-eu-country-of-citizenship'];
+        if (isset($params["additionalfields"]["Entity Type"])) {
+            // WHMCS native fields
+            $reqParams["x-eu-natural-person"] = ($params["additionalfields"]["Entity Type"] == "INDIVIDUAL") ? "true" : "false";
+            $reqParams["x-eu-country-of-citizenship"] = $params["additionalfields"]["EU Country of Citizenship"];
+        } elseif (isset($params["additionalfields"]['x-eu-country-of-citizenship'])) {
+            // older WHMCS custom fields
+            $reqParams["x-eu-country-of-citizenship"] = $params["additionalfields"]['x-eu-country-of-citizenship'];
+            $reqParams["x-eu-natural-person"] = empty($reqParams["x-eu-country-of-citizenship"])?"false":"true";
+        }
     }
 
     $Joker = DMAPIClient::getInstance($params);
@@ -1066,11 +1081,7 @@ function joker_FetchEPPCode($params) {
     }
 
     if ($procid) {
-		# Majority of all auth-id requests complete in more than 5 seconds, thus we wait
-        # initially 5 seconds to reduce the strain on the API
-    	usleep(5000);
-
-        $timeout = 25; //seconds
+        $timeout = 30; //seconds
 
         $authid = false;
         $error = false;
@@ -1101,7 +1112,7 @@ function joker_FetchEPPCode($params) {
                 $error = true;
             }
             if (!$error && !$authid) {
-                usleep(1000);
+                usleep(500);
             }
         }
     }
@@ -1446,7 +1457,7 @@ function joker_GetDomainSuggestions($params) {
 function joker_GetTldPricing($params)
 {
     $Joker = DMAPIClient::getInstance($params);
-    
+
     $Joker->ExecuteAction("v2/query-price-list", Array(), "get");
     if ($Joker->hasError()) {
         return array('error' => $Joker->getError());
@@ -1455,9 +1466,9 @@ function joker_GetTldPricing($params)
     $results = new ResultsList;
 
     $priceList = $Joker->getResponseList();
-    
+
     $prices = Array();
-    
+
     $currency = $priceList[0]['currency'];
 
     foreach($priceList as $data) {
@@ -1555,6 +1566,7 @@ function joker_SyncManual($params) {
             $values['error'] = "Domain/Order not found";
         }
     }
+    joker_UpdatePremiumRenewalPrice($params);
     if (!isset($values['error'])) {
         $values['domainid'] = $params['domainid'];
         localAPI('updateclientdomain', $values, $params['AdminUser']);
@@ -1721,6 +1733,60 @@ function joker_CleanupContactDetails($params) {
     }
 
     return $params;
+}
+
+function joker_updatePremiumRenewalPrice($params) {
+    $params = injectDomainObjectIfNecessary($params);
+    $domainid = $params['domainid'];
+    $idn_domain = $params['original']['domainObj']->getDomain(true);
+    $reqParams = Array(
+        'domain' => $idn_domain,
+        'check-price' => 'renew',
+        'period' => "1"
+    );
+    $Joker = DMAPIClient::getInstance($params);
+    $Joker->ExecuteAction('domain-check', $reqParams);
+    if (!$Joker->hasError()) {
+        $priceInfo = explode(' ', $Joker->getValue('domain-price-renew'));
+        $domainClass = $Joker->getValue('domain-class');
+        $domain = WHMCS\Domain\Domain::where('registrar', 'joker')->find($domainid);
+        if ($domain) {
+            if ($domainClass == 'premium') {
+                $domain->isPremium=true;
+                $price = $priceInfo[0];
+                $currency = $priceInfo[1];
+                $registrarCurrencyId = \WHMCS\Database\Capsule::table("tblcurrencies")->where("code", "=", $currency)->value("id");
+                if (!$registrarCurrencyId) {
+                    throw new \WHMCS\Exception("Domain registrar currency not available for conversion");
+                }
+                $renewalCostPrice = $domain->extra()->firstOrNew(
+                    [
+                        'name' => 'registrarRenewalCostPrice'
+                    ]
+                );
+                $renewalCostPrice->value = $price;
+                $renewalCostPrice->save();
+                $registrarCurrency = $domain->extra()->firstOrNew(
+                    [
+                        'name' => 'registrarCurrency'
+                    ]
+                );
+                $registrarCurrency->value = $registrarCurrencyId;
+                $registrarCurrency->save();
+                $userCurrency = getCurrency($domain->userid);
+                $recurringamount = convertCurrency($price, $registrarCurrencyId, $userCurrency["id"]);
+                $domain->recurringamount = $recurringamount * (1 + WHMCS\Domains\Pricing\Premium::markupForCost($recurringamount) / 100);
+                $domain->save();
+                return true;
+            } else {
+                if ($domain->isPremium) {
+                    $domain->isPremium = false;
+                    $domain->save();
+                }
+            }
+        }
+    }
+    return false;
 }
 
 function joker_ClientAreaCustomButtonArray($params) {

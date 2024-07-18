@@ -4,7 +4,7 @@
  ****************************************************************************
  *                                                                          *
  * The MIT License (MIT)                                                    *
- * Copyright (c) 2019 Joker.com                                             *
+ * Copyright (c) 2021 Joker.com                                             *
  * Permission is hereby granted, free of charge, to any person obtaining a  *
  * copy of this software and associated documentation files                 *
  * (the "Software"), to deal in the Software without restriction, including *
@@ -165,11 +165,8 @@ class DMAPIClient {
             $values = explode($separator, $line);
             if (count($columnTitles) > 0) {
                 $columns = array();
-                $n = 0;
                 foreach ($values as $key => $value) {
-                    $columns[$n] = $value;
                     $columns[$columnTitles[$key]] = $value;
-                    $n++;
                 }
                 $result[] = $columns;
             } else {
