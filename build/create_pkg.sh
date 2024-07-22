@@ -28,4 +28,6 @@ pushd ..
 zip -r ${BUILD}/${FILE}-${REQUESTED}.zip . -i@${BUILD}/package.lst
 popd
 
+git switch master
+
 echo "done."
