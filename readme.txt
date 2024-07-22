@@ -38,8 +38,9 @@ navigate to
 
 Setup -> Products/Services -> Domain Registrars
 
-Pick "Joker.com" form the list, "Activate" the plugin, and enter your Joker.com
+Pick "Joker.com" from the list, "Activate" the plugin, and enter your Joker.com
 Reseller's credentials - the same you are using for DMAPI.
+
 You also may choose to use the "TestMode" for dry run, or to use the free
 Joker.com nameservers as a default for new domains.
 Once activated, you may always change these settings by clicking on "Configure".
@@ -49,6 +50,7 @@ Don't forget to "Save Changes" after doing so.
 Usage:
 You will find most options for domain in section "Clients -> Domain registration"
 within the domain details.
+
 A special command there is "Sync" - this will trigger a manual sync of a domain's
 status and expiration date with Joker.com, in case it was modified outside of
 WHMCS. This is usually also done automatically by the 'WHMCS domainsync cron'.
@@ -56,7 +58,8 @@ WHMCS. This is usually also done automatically by the 'WHMCS domainsync cron'.
 Advanced settings:
 If you enable the "CronJob" option of this module, make sure that the
 file 'modules/registrars/joker/cron.php' is executed regularly. We suggest to
-run it every 5 minutes. If the cron.php is not executed and the "CronJob" option
+run it every 5 minutes. 
+If the cron.php is not executed _and_ the "CronJob" option
 is enabled, domain registrations will not complete in WHMCS!!!
 
 Example crontab entry:

@@ -1,3 +1,8 @@
+## New in version 1.3.5
+
+- optimized some DMAPI timings
+- some fixes
+
 ## New in version 1.3.4
 
 - Changed Joker.com default nameservers to the new ones

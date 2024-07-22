@@ -1,0 +1,7 @@
+*.php
+*.tpl
+*.txt
+*.json
+*.md
+logo.gif
+locale/
