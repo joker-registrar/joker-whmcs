@@ -1,3 +1,7 @@
+## New in version 1.3.6
+
+- fixed DMAPI timing
+
 ## New in version 1.3.5
 
 - optimized some DMAPI timings

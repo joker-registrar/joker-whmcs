@@ -1083,7 +1083,7 @@ function joker_FetchEPPCode($params) {
     if ($procid) {
         # Majority of all auth-id requests complete in more than 5 seconds, thus we wait
         # initially 5 seconds to reduce the strain on the API
-        usleep(5000);
+        sleep(5);
 
         $timeout = 25; //seconds
 
@@ -1116,7 +1116,7 @@ function joker_FetchEPPCode($params) {
                 $error = true;
             }
             if (!$error && !$authid) {
-                usleep(1000);
+                sleep(1);
             }
         }
     }
