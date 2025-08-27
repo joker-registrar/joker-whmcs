@@ -1,3 +1,7 @@
+## New in version 1.3.7
+
+- fixed Joker DNS list
+
 ## New in version 1.3.6
 
 - fixed DMAPI timing
