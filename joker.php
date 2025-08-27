@@ -379,7 +379,7 @@ function joker_RegisterDomain($params) {
 
 
     if ($params["DefaultNameservers"]) {
-        $reqParams["ns-list"] = "x.ns.joker.com:x.ns.joker.com:z.ns.joker.com";
+        $reqParams["ns-list"] = "x.ns.joker.com:y.ns.joker.com:z.ns.joker.com";
     } else {
         $nslist = array();
         for ($i = 1; $i <= 5; $i++) {
