@@ -1,10 +1,15 @@
+## New in version 1.3.8
+
+- fixed PHP8.4 error
+
 ## New in version 1.3.7
 
-- fixed Joker DNS list
+- fixed Joker.com DNS list
+ 
 
 ## New in version 1.3.6
 
-- fixed DMAPI timing
+- fixed DMAPI get-transfer-auth-id request
 
 ## New in version 1.3.5
 

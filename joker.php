@@ -74,7 +74,9 @@ function joker_GetNameservers($params) {
     $values = array();
     $nameservers = $Joker->getValue('domain.nservers.nserver.handle');
     for ($i = 1; $i <= 12; $i++) {
-        $values["ns" . $i] = isset($nameservers[$i - 1]) ? $nameservers[$i - 1] : '';
+        if (isset($nameservers[$i - 1]) && trim($nameservers[$i - 1]) !== '') {
+            $values["ns" . $i] = isset($nameservers[$i - 1]) ? $nameservers[$i - 1] : '';
+        }
     }
 
     if ($Joker->hasError()) {
